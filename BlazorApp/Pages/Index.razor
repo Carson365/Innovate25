@@ -19,23 +19,72 @@
 <body>
 	<div class="container">
 
-		@* display 5 iMessages *@
 		@if (EmployeeService.hl7Messages != null)
-		{
-			@foreach (var iMessage in EmployeeService.hl7Messages.Take(5))
-			{
-				<div class="box">
-					@{
-						var parser = new PipeParser();
-						var messageString = parser.Encode(iMessage);
-					}
+        {
+{
+        var segmentTypeMapping = new Dictionary<string, Type>
+        {
+            { "MSH", typeof(Tools.MSH) },
+            { "EVN", typeof(Tools.EVN) },
+            { "PID", typeof(Tools.PID) },
+            { "PV1", typeof(Tools.PV1) },
+            { "OBR", typeof(Tools.OBR) },
+            { "ORC", typeof(Tools.ORC) }
+        };
+    }
 
-					<p>@messageString</p>
-				</div>
-			}
-		}
+    @foreach (var iMessage in EmployeeService.hl7Messages.Take(5))
+    {
+        <div class="box">
+            @{
+                var parser = new PipeParser();
+                // Encode the HL7 message as a string.
+                var messageString = parser.Encode(iMessage);
+                // Split the message into its segments (typically separated by carriage returns)
+                var segments = messageString.Split('\r');
+            }
 
-
+            @* Loop through each segment and display its fields with names *@
+            @foreach (var segment in segments)
+            {
+                if (!string.IsNullOrWhiteSpace(segment))
+                {
+                    <div class="segment" style="margin-bottom: 1em;">
+                        @{
+                            // Split the segment into fields (using the pipe '|' as the separator)
+                            var fields = segment.Split('|');
+                            // Use the first field (segment name, e.g., "MSH", "PID") 
+                            // to get the corresponding type (if available)
+                            var segType = fields[0];
+                            Type? type = null;
+                            segmentTypeMapping.TryGetValue(segType, out type);
+                            
+                            // Retrieve the properties for this segment type if available
+                            var properties = type != null ? type.GetProperties() : Array.Empty<System.Reflection.PropertyInfo>();
+                        }
+                        <p>
+                            <strong>@fields[0]</strong>
+                        </p>
+                        @for (int i = 1; i < fields.Length; i++)
+                        {
+                            <div style="margin-left: 1em;">
+                                @* If the property exists in the type, use its name and humanize it; otherwise, fallback to a generic label *@
+                                <span>
+                                    <strong>
+                                        @(i - 1 < properties.Length 
+                                            ? properties[i - 1].Name.Humanize(LetterCasing.Title) 
+                                            : $"Field {i}")
+                                    </strong>:
+                                </span>
+                                <span> @fields[i] </span>
+                            </div>
+                        }
+                    </div>
+                }
+            }
+        </div>
+    }
+}
 
 		@if (EmployeeService.isLoading)
 		{
@@ -47,13 +96,6 @@
 			{
 				<div class="box">
 					<EmployeeCard Employee="@item"></EmployeeCard>
-					@* <a href="view" @onclick="() => EmployeeService.selectedEmployee = item" class="underline">Expand</a> *@
-
-@* 					<div class="nav-item">
-						<NavLink class="nav-link" href="view" @onclick="() => EmployeeService.selectedEmployee = item">
-							<span class="oi oi-magnifying-glass" aria-hidden="true"></span> View
-						</NavLink>
-					</div> *@
 				</div>
 			}
 			if (EmployeeService.searchResults.Count == 0)
@@ -75,13 +117,11 @@
 
 <div class="bottomFade"></div>
 
-
 @code {
 	private int visibleCount;
 
 	protected override async Task OnInitializedAsync()
 	{
-		//EmployeeService.OnEmployeesLoaded += () => refreshSearch();
 		_ = LoadEmployeesInBackground();
 	}
 
@@ -94,21 +134,33 @@
 
 	private void refreshSearch()
 	{
-		if (!string.IsNullOrEmpty(EmployeeService.searchId) || !string.IsNullOrEmpty(EmployeeService.searchName)) SearchEmployee();
+		if (!string.IsNullOrEmpty(EmployeeService.searchId) || !string.IsNullOrEmpty(EmployeeService.searchName))
+			SearchEmployee();
 		StateHasChanged();
 	}
 
-	protected override async Task OnAfterRenderAsync(bool first){
+	protected override async Task OnAfterRenderAsync(bool first)
+	{
 		SearchEmployee();
 		StateHasChanged();
 	}
 
 	private void SearchEmployee()
 	{
-		//Console.WriteLine("Here");
 		visibleCount = 100; // Reset visibleCount whenever a new search is made.
 		EmployeeService.SearchEmployees();
 
-		if (string.IsNullOrEmpty(EmployeeService.searchId) && string.IsNullOrEmpty(EmployeeService.searchName)) visibleCount = 0;
+		if (string.IsNullOrEmpty(EmployeeService.searchId) && string.IsNullOrEmpty(EmployeeService.searchName))
+			visibleCount = 0;
 	}
+
+    Dictionary<string, Type> segmentTypeMapping = new()
+    {
+        { "MSH", typeof(Tools.MSH) },
+        { "EVN", typeof(Tools.EVN) },
+        { "PID", typeof(Tools.PID) },
+        { "PV1", typeof(Tools.PV1) },
+        { "OBR", typeof(Tools.OBR) },
+        { "ORC", typeof(Tools.ORC) }
+    };
 }

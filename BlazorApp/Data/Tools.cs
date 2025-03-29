@@ -1,0 +1,228 @@
+﻿namespace BlazorApp.Data
+{
+	public class Tools
+	{
+		// MSH Segment – Message Header
+		public class MSH
+		{
+			public required char FieldSeparator { get; set; }
+			public required string EncodingCharacters { get; set; }
+			public string? SendingApplication { get; set; }
+			public string? SendingFacility { get; set; }
+			public string? ReceivingApplication { get; set; }
+			public string? ReceivingFacility { get; set; }
+			public required DateTime DateTimeOfMessage { get; set; }
+			public string? Security { get; set; }
+			public required string MessageType { get; set; }
+			public required string MessageControlId { get; set; }
+			public required string ProcessingId { get; set; }
+			public required string VersionId { get; set; }
+			public long? SequenceNumber { get; set; }
+			public string? ContinuationPointer { get; set; }
+			public string? AcceptAcknowledgmentType { get; set; }
+			public string? ApplicationAcknowledgmentType { get; set; }
+			public string? CountryCode { get; set; }
+			public string? CharacterSet { get; set; }
+			public string? PrincipalLanguageOfMessage { get; set; }
+			public string? AlternateCharacterSetHandlingScheme { get; set; }
+			public List<string>? MessageProfileIdentifiers { get; set; }
+		}
+
+
+		// EVN Segment – Event Type
+		public class EVN
+		{
+			public string? EventTypeCode { get; set; }
+			public required DateTime RecordedDateTime { get; set; }
+			public DateTime? DateTimePlannedEvent { get; set; }
+			public string? EventReasonCode { get; set; }
+			public List<string>? OperatorIds { get; set; }
+			public DateTime? EventOccurred { get; set; }
+			public string? EventFacility { get; set; }
+		}
+
+
+		// PID Segment – Patient Identification
+		public class PID
+		{
+			public int? SetIdPID { get; set; }
+			public string? PatientID { get; set; }
+			public required List<string> PatientIdentifierList { get; set; }
+			public List<string>? AlternatePatientIDs { get; set; }
+			public required List<string> PatientNames { get; set; }
+			public List<string>? MothersMaidenNames { get; set; }
+			public DateTime? DateTimeOfBirth { get; set; }
+			public string? AdministrativeSex { get; set; }
+			public List<string>? PatientAliases { get; set; }
+			public List<string>? Races { get; set; }
+			public List<string>? PatientAddresses { get; set; }
+			public string? CountyCode { get; set; }
+			public List<string>? HomePhoneNumbers { get; set; }
+			public List<string>? BusinessPhoneNumbers { get; set; }
+			public string? PrimaryLanguage { get; set; }
+			public string? MaritalStatus { get; set; }
+			public string? Religion { get; set; }
+			public string? PatientAccountNumber { get; set; }
+			public string? SSNNumber { get; set; }
+			public string? DriversLicenseNumber { get; set; }
+			public List<string>? MothersIdentifiers { get; set; }
+			public List<string>? EthnicGroups { get; set; }
+			public string? BirthPlace { get; set; }
+			public string? MultipleBirthIndicator { get; set; }
+			public int? BirthOrder { get; set; }
+			public List<string>? Citizenships { get; set; }
+			public string? VeteransMilitaryStatus { get; set; }
+			public string? Nationality { get; set; }
+			public DateTime? PatientDeathDateTime { get; set; }
+			public string? PatientDeathIndicator { get; set; }
+			public string? IdentityUnknownIndicator { get; set; }
+			public List<string>? IdentityReliabilityCodes { get; set; }
+			public DateTime? LastUpdateDateTime { get; set; }
+			public string? LastUpdateFacility { get; set; }
+			public string? SpeciesCode { get; set; }
+			public string? BreedCode { get; set; }
+			public string? Strain { get; set; }
+			public string? ProductionClassCode { get; set; }
+			public List<string>? TribalCitizenships { get; set; }
+		}
+
+
+		// PV1 Segment – Patient Visit
+		public class PV1
+		{
+			public int? SetIdPV1 { get; set; }
+			public required string PatientClass { get; set; }
+			public string? AssignedPatientLocation { get; set; }
+			public string? AdmissionType { get; set; }
+			public string? PreadmitNumber { get; set; }
+			public string? PriorPatientLocation { get; set; }
+			public List<string>? AttendingDoctors { get; set; }
+			public List<string>? ReferringDoctors { get; set; }
+			public List<string>? ConsultingDoctors { get; set; }
+			public string? HospitalService { get; set; }
+			public string? TemporaryLocation { get; set; }
+			public string? PreadmitTestIndicator { get; set; }
+			public string? ReadmissionIndicator { get; set; }
+			public string? AdmitSource { get; set; }
+			public List<string>? AmbulatoryStatuses { get; set; }
+			public string? VIPIndicator { get; set; }
+			public List<string>? AdmittingDoctors { get; set; }
+			public string? PatientType { get; set; }
+			public string? VisitNumber { get; set; }
+			public List<string>? FinancialClasses { get; set; }
+			public string? ChargePriceIndicator { get; set; }
+			public string? CourtesyCode { get; set; }
+			public string? CreditRating { get; set; }
+			public List<string>? ContractCodes { get; set; }
+			public DateTime? ContractEffectiveDate { get; set; }
+			public decimal? ContractAmount { get; set; }
+			public int? ContractPeriod { get; set; }
+			public string? InterestCode { get; set; }
+			public string? TransferToBadDebtCode { get; set; }
+			public DateTime? TransferToBadDebtDate { get; set; }
+			public string? BadDebtAgencyCode { get; set; }
+			public decimal? BadDebtTransferAmount { get; set; }
+			public decimal? BadDebtRecoveryAmount { get; set; }
+			public string? DeleteAccountIndicator { get; set; }
+			public DateTime? DeleteAccountDate { get; set; }
+			public string? DischargeDisposition { get; set; }
+			public string? DischargedToLocation { get; set; }
+			public string? DietType { get; set; }
+			public string? ServicingFacility { get; set; }
+			public string? BedStatus { get; set; }
+			public string? AccountStatus { get; set; }
+			public string? PendingLocation { get; set; }
+			public string? PriorTemporaryLocation { get; set; }
+			public DateTime? AdmitDateTime { get; set; }
+			public List<DateTime>? DischargeDateTimes { get; set; }
+			public decimal? CurrentPatientBalance { get; set; }
+			public decimal? TotalCharges { get; set; }
+			public decimal? TotalAdjustments { get; set; }
+			public decimal? TotalPayments { get; set; }
+			public string? AlternateVisitID { get; set; }
+			public string? VisitIndicator { get; set; }
+			public List<string>? OtherHealthcareProviders { get; set; }
+		}
+
+
+		// OBR Segment – Observation Request
+		public class OBR
+		{
+			public int? SetIdOBR { get; set; }
+			public string? PlacerOrderNumber { get; set; }
+			public string? FillerOrderNumber { get; set; }
+			public required string UniversalServiceIdentifier { get; set; }
+			public string? PriorityOBR { get; set; }
+			public DateTime? RequestedDateTime { get; set; }
+			public DateTime? ObservationDateTime { get; set; }
+			public DateTime? ObservationEndDateTime { get; set; }
+			public string? CollectionVolume { get; set; }
+			public List<string>? CollectorIdentifiers { get; set; }
+			public string? SpecimenActionCode { get; set; }
+			public string? DangerCode { get; set; }
+			public string? RelevantClinicalInformation { get; set; }
+			public DateTime? SpecimenReceivedDateTime { get; set; }
+			public string? SpecimenSource { get; set; }
+			public List<string>? OrderingProviders { get; set; }
+			public List<string>? OrderCallbackPhoneNumbers { get; set; }
+			public string? PlacerField1 { get; set; }
+			public string? PlacerField2 { get; set; }
+			public string? FillerField1 { get; set; }
+			public string? FillerField2 { get; set; }
+			public DateTime? ResultsRptStatusChangeDateTime { get; set; }
+			public string? ChargeToPractice { get; set; }
+			public string? DiagnosticServSectID { get; set; }
+			public string? ResultStatus { get; set; }
+			public string? ParentResult { get; set; }
+			public List<string>? QuantityTiming { get; set; }
+			public List<string>? ResultCopiesTo { get; set; }
+			public string? Parent { get; set; }
+			public string? TransportationMode { get; set; }
+			public List<string>? ReasonForStudy { get; set; }
+			public string? PrincipalResultInterpreter { get; set; }
+			public List<string>? AssistantResultInterpreters { get; set; }
+			public List<string>? Technicians { get; set; }
+			public List<string>? Transcriptionists { get; set; }
+			public DateTime? ScheduledDateTime { get; set; }
+			public int? NumberOfSampleContainers { get; set; }
+			public List<string>? TransportLogisticsOfCollectedSample { get; set; }
+			public List<string>? CollectorsComment { get; set; }
+			public string? TransportArrangementResponsibility { get; set; }
+			public string? TransportArranged { get; set; }
+			public string? EscortRequired { get; set; }
+			public List<string>? PlannedPatientTransportComments { get; set; }
+			public string? ProcedureCode { get; set; }
+			public List<string>? ProcedureCodeModifiers { get; set; }
+			public List<string>? PlacerSupplementalServiceInformation { get; set; }
+			public List<string>? FillerSupplementalServiceInformation { get; set; }
+			public string? MedicallyNecessaryDuplicateProcedureReason { get; set; }
+			public string? ResultHandling { get; set; }
+		}
+
+
+		// ORC Segment – Common Order
+		public class ORC
+		{
+			public string? OrderControl { get; set; }
+			public string? PlacerOrderNumber { get; set; }
+			public string? FillerOrderNumber { get; set; }
+			public DateTime? OrderDateTime { get; set; }
+			public string? OrderingProvider { get; set; }
+			public string? EnteringOrganization { get; set; }
+			// Include other fields as needed.
+		}
+
+		public class Message
+		{
+			public required MSH MessageHeader { get; set; }
+			public EVN? EventType { get; set; }
+			public PID? PatientIdentification { get; set; }
+			public PV1? PatientVisit { get; set; }
+			public OBR? ObservationRequest { get; set; }
+			public ORC? CommonOrder { get; set; }
+			// Add more segments as needed.
+		}
+
+
+	}
+}
