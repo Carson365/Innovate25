@@ -55,7 +55,7 @@ input[type="text"] {
 }
 
 .box {
-	width: calc(90% / 4);
+	width: calc(90%);
 	min-width: 250px;
 	height: 11.5em;
 	padding: 1em;

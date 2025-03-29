@@ -2,6 +2,8 @@
 @using BlazorApp.Data
 @inject EmployeeService EmployeeService
 @inject IJSRuntime JS
+@using Humanizer
+@using NHapi.Base.Parser
 
 <PageTitle>Home</PageTitle>
 
@@ -16,6 +18,25 @@
 
 <body>
 	<div class="container">
+
+		@* display 5 iMessages *@
+		@if (EmployeeService.hl7Messages != null)
+		{
+			@foreach (var iMessage in EmployeeService.hl7Messages.Take(5))
+			{
+				<div class="box">
+					@{
+						var parser = new PipeParser();
+						var messageString = parser.Encode(iMessage);
+					}
+
+					<p>@messageString</p>
+				</div>
+			}
+		}
+
+
+
 		@if (EmployeeService.isLoading)
 		{
 			<p>Loading employees, please wait...</p>
@@ -67,6 +88,7 @@
 	private async Task LoadEmployeesInBackground()
 	{
 		await EmployeeService.LoadEmployeesAsync();
+		await EmployeeService.LoadHL7RecordsAsync();
 		refreshSearch();
 	}
 
@@ -83,7 +105,7 @@
 
 	private void SearchEmployee()
 	{
-		Console.WriteLine("Here");
+		//Console.WriteLine("Here");
 		visibleCount = 100; // Reset visibleCount whenever a new search is made.
 		EmployeeService.SearchEmployees();
 
