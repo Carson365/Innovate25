@@ -40,7 +40,8 @@ namespace BlazorApp.Data
 		private static List<Employee> GetEmployees()
         {
             var engine = new FileHelperEngine<CSVEmployee> { Options = { IgnoreFirstLines = 1 } };
-            CSVEmployee?[] records = engine.ReadFile("Data\\orgchart_faux.csv");
+            CSVEmployee?[] records = engine.ReadFile(Path.Combine("Data", "orgchart_faux.csv"));
+
 
             List<Employee> employees = [];
             foreach (CSVEmployee? record in records)
