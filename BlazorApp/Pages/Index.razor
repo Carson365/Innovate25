@@ -20,8 +20,8 @@
 	<div class="container">
 
 		@if (EmployeeService.hl7Messages != null)
-        {
 {
+    {
         var segmentTypeMapping = new Dictionary<string, Type>
         {
             { "MSH", typeof(Tools.MSH) },
@@ -44,7 +44,7 @@
                 var segments = messageString.Split('\r');
             }
 
-            @* Loop through each segment and display its fields with names *@
+            @* Loop through each segment and display its fields with values *@
             @foreach (var segment in segments)
             {
                 if (!string.IsNullOrWhiteSpace(segment))
@@ -67,17 +67,20 @@
                         </p>
                         @for (int i = 1; i < fields.Length; i++)
                         {
-                            <div style="margin-left: 1em;">
-                                @* If the property exists in the type, use its name and humanize it; otherwise, fallback to a generic label *@
-                                <span>
-                                    <strong>
-                                        @(i - 1 < properties.Length 
-                                            ? properties[i - 1].Name.Humanize(LetterCasing.Title) 
-                                            : $"Field {i}")
-                                    </strong>:
-                                </span>
-                                <span> @fields[i] </span>
-                            </div>
+                            // Only display the field if it has a value.
+                            if (!string.IsNullOrWhiteSpace(fields[i]))
+                            {
+                                <div style="margin-left: 1em;">
+                                    <span>
+                                        <strong>
+                                            @(i - 1 < properties.Length 
+                                                ? properties[i - 1].Name.Humanize(LetterCasing.Title) 
+                                                : $"Field {i}")
+                                        </strong>:
+                                    </span>
+                                    <span> @fields[i] </span>
+                                </div>
+                            }
                         }
                     </div>
                 }
