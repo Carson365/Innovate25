@@ -1,0 +1,107 @@
+﻿/*.container {
+	display: grid;
+	grid-template-rows: 1fr 1fr 1fr;
+	grid-template-columns: 1fr 1fr 1fr;
+}*/
+
+.container {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	max-width: 100%;
+}
+
+.up {
+/*	grid-row-start: 1;
+	grid-row-end: 1;*/
+}
+
+.primary.primary {
+/*	grid-row-start: 2;
+	grid-row-end: 2;*/
+	background-color: var(--secondary);
+}
+
+.subprimary.subprimary {
+/*	grid-row-start: 2;
+	grid-row-end: 2;*/
+	background-image: linear-gradient(45deg, var(--primary), var(--secondary));
+	background-color: var(--accent);
+}
+
+.down {
+/*	grid-row-start: 3;
+	grid-row-end: 3;*/
+}
+
+/*.box {
+	padding: 10px;
+	justify-content: left;
+	margin: 5px 5px 5px 5px;
+	border: solid 2px var(--text);
+	border-radius: 10px;
+	background-color: var(--primary);
+	color: var(--text);
+	font-size: 12px;
+}*/
+
+.box {
+
+	height: 10em;
+	padding: 1em;
+	/*margin: 5px 5px 5px 5px;*/
+	margin: -2px -2px 0px -2px;
+	border: solid 2px var(--text);
+	border-radius: 10px;
+	background-color: var(--primary);
+	color: var(--text);
+	font-size: 12px;
+}
+
+.holder {
+	margin: 5px 5px 5px 5px;
+	padding: 0px;
+	/*--fullsize: calc(90% / 4);*/
+	
+	height: 10em;
+	border: solid 2px var(--text);
+	border-radius: 10px;
+	background-color: var(--primary);
+	color: var(--text);
+	font-size: 12px;
+}
+
+.top {
+	width: calc(22.5% * 4 + 10px * 3);
+	max-width: calc(22.5% * 4 + 10px * 3);
+	display: flex;
+	overflow-x: hidden; /* Enables horizontal scrolling */
+	overflow-y: hidden;
+	white-space: nowrap; /* Prevents wrapping */
+	gap: 0px; /* Optional: Adds space between items */
+}
+	.top > .box {
+		width: calc(100% / 4); /*Hardcoded magic numbers, my favorite!*/
+	}
+		.top > .box:not(:first-child) {
+			margin: -2px 7px 0px 7px;
+		}
+	.top > .box:nth-child(2) {
+		margin: -2px 7px 0px 14px;
+	}
+		.top > .box:nth-child(4) {
+			margin: -2px -2px 0px 7px;
+		}
+
+
+.main {
+	width: calc(90% / 4);
+}
+
+.middle {
+	width: calc(22.5% * 3 + 10px * 2);
+}
+
+.bottom {
+	width: calc(22.5% * 4 + 10px * 3);
+}
