@@ -2,57 +2,38 @@
 using System.Globalization;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Collections;
 
-namespace BlazorApp.Data {
-  public class EmployeeService {
-    // Employee data properties.
-    public List < Employee > employeeList {
-      get;
-      private set;
-    } = new();
-    public Employee selectedEmployee {
-      get;
-      set;
-    }
-    public bool isLoading {
-      get;
-      private set;
-    } = true;
-    public bool recordsLoading {
-      get;
-      private set;
-    } = true;
+namespace BlazorApp.Data
+{
+	public class EmployeeService
+	{
+		// Employee data properties.
+		public List<Employee> employeeList { get; private set; } = new();
+		public Employee selectedEmployee { get; set; }
+		public bool isLoading { get; private set; } = true;
+		public bool recordsLoading { get; private set; } = true;
 
-    public static Dictionary < string, string > locationNames = new();
-    public string searchId {
-      get;
-      set;
-    } = string.Empty;
-    public string searchName {
-      get;
-      set;
-    } = string.Empty;
-    public List < Employee > searchResults {
-      get;
-      set;
-    } = new();
-    public event Action ? OnEmployeesLoaded;
-    public event Action ? OnHL7MessagesLoaded;
+		public static Dictionary<string, string> locationNames = new();
+		public string searchId { get; set; } = string.Empty;
+		public string searchName { get; set; } = string.Empty;
+		public List<Employee> searchResults { get; set; } = new();
+		public event Action? OnEmployeesLoaded;
+		public event Action? OnHL7MessagesLoaded;
 
-    // HL7 Messages as custom Tools.Message objects.
-    public List < Tools.Message > hl7Messages {
-      get;
-      private set;
-    } = new();
+		// HL7 Messages as custom Tools.Message objects.
+		public List<Tools.Message> hl7Messages { get; private set; } = new();
 
-    public async Task LoadEmployeesAsync() {
-      if (!employeeList.Any()) {
-        employeeList = await Task.Run(() => GetEmployees());
-        selectedEmployee = employeeList.First(e => e.ID == "792BDML");
-      }
-      isLoading = false;
-      OnEmployeesLoaded?.Invoke();
-    }
+		public async Task LoadEmployeesAsync()
+		{
+			if (!employeeList.Any())
+			{
+				employeeList = await Task.Run(() => GetEmployees());
+				selectedEmployee = employeeList.First(e => e.ID == "792BDML");
+			}
+			isLoading = false;
+			OnEmployeesLoaded?.Invoke();
+		}
 
     public async Task LoadHL7RecordsAsync() {
       var time1 = DateTime.Now;
@@ -94,52 +75,36 @@ namespace BlazorApp.Data {
     private Tools.Message ConvertHL7ToMessage(string message) {
       var msg = new Tools.Message();
 
-      // Map from segment identifier to tuple: (segment type, property name on Tools.Message)
-      var segmentTypeMapping = new Dictionary < string,
-        (Type SegmentType, string MessagePropName) > {
-          {
-            "MSH",
-            (typeof (Tools.MSH), "MessageHeader")
-          },
-          {
-            "EVN",
-            (typeof (Tools.EVN), "EventType")
-          },
-          {
-            "PID",
-            (typeof (Tools.PID), "PatientIdentification")
-          },
-          {
-            "PV1",
-            (typeof (Tools.PV1), "PatientVisit")
-          },
-          {
-            "OBR",
-            (typeof (Tools.OBR), "ObservationRequest")
-          },
-          {
-            "ORC",
-            (typeof (Tools.ORC), "CommonOrder")
-          }
-        };
+			// Map from segment identifier to tuple: (segment type, property name on Tools.Message)
+			var segmentTypeMapping = new Dictionary<string, (Type SegmentType, string MessagePropName)>
+			{
+				{ "MSH", (typeof(Tools.MSH), "MessageHeader") },
+				{ "EVN", (typeof(Tools.EVN), "EventType") },
+				{ "PID", (typeof(Tools.PID), "PatientIdentification") },
+				{ "PV1", (typeof(Tools.PV1), "PatientVisit") },
+				{ "OBR", (typeof(Tools.OBR), "ObservationRequest") },
+				{ "ORC", (typeof(Tools.ORC), "CommonOrder") }
+			};
 
-      var segments = message.Split('\r');
-      foreach(var segment in segments.Where(s => !string.IsNullOrWhiteSpace(s))) {
-        var fields = segment.Split('|');
-        var segType = fields[0];
-        if (segmentTypeMapping.TryGetValue(segType, out
-            var mapping)) {
-          object segmentObj = MapSegmentToObject(fields, mapping.SegmentType);
-          PropertyInfo ? msgProp = typeof (Tools.Message).GetProperty(mapping.MessagePropName);
-          msgProp?.SetValue(msg, segmentObj);
-        }
-      }
-      return msg;
-    }
+			var segments = message.Split('\r');
+			foreach (var segment in segments.Where(s => !string.IsNullOrWhiteSpace(s)))
+			{
+				var fields = segment.Split('|');
+				var segType = fields[0];
+				if (segmentTypeMapping.TryGetValue(segType, out var mapping))
+				{
+					object segmentObj = MapSegmentToObject(fields, mapping.SegmentType);
+					PropertyInfo? msgProp = typeof(Tools.Message).GetProperty(mapping.MessagePropName);
+					msgProp?.SetValue(msg, segmentObj);
+				}
+			}
+			return msg;
+		}
 
-    private object MapSegmentToObject(string[] fields, Type targetType) {
-      object segmentObj = Activator.CreateInstance(targetType) ??
-        throw new InvalidOperationException("Unable to create instance of " + targetType.Name);
+		private object MapSegmentToObject(string[] fields, Type targetType)
+		{
+			object segmentObj = Activator.CreateInstance(targetType)
+								?? throw new InvalidOperationException("Unable to create instance of " + targetType.Name);
 
       var properties = targetType.GetProperties();
       for (int i = 0; i < properties.Length; i++) {
@@ -147,51 +112,56 @@ namespace BlazorApp.Data {
         if (fields.Length <= fieldIndex || string.IsNullOrWhiteSpace(fields[fieldIndex]))
           continue;
 
-        string fieldValue = fields[fieldIndex];
-        PropertyInfo prop = properties[i];
-        try {
-          object ? convertedValue = prop.PropertyType
-          switch {
-            Type t when t == typeof (DateTime) || t == typeof (DateTime ? ) => ParseHL7Date(fieldValue),
-              Type t when t == typeof (int) || t == typeof (int ? ) => int.TryParse(fieldValue, out int intValue) ? intValue : null,
-              Type t when t == typeof (long) || t == typeof (long ? ) => long.TryParse(fieldValue, out long longValue) ? longValue : null,
-              Type t when t == typeof (char) => fieldValue[0],
-              Type t when t == typeof (List < string > ) => fieldValue.Split('~', StringSplitOptions.RemoveEmptyEntries).ToList(),
-              Type t when t == typeof (List < DateTime > ) =>
-              fieldValue.Split('~', StringSplitOptions.RemoveEmptyEntries)
-              .Select(ParseHL7Date)
-              .Where(d => d.HasValue)
-              .Select(d => d.Value)
-              .ToList(),
-              _ => Convert.ChangeType(fieldValue, prop.PropertyType)
-          };
-          prop.SetValue(segmentObj, convertedValue);
-        } catch (Exception ex) {
-          Console.WriteLine($"Error mapping field '{fieldValue}' to property '{prop.Name}' of type '{prop.PropertyType.Name}': {ex.Message}");
-        }
-      }
-      return segmentObj;
-    }
+				string fieldValue = fields[fieldIndex];
+				PropertyInfo prop = properties[i];
+				try
+				{
+					object? convertedValue = prop.PropertyType switch
+					{
+						Type t when t == typeof(DateTime) || t == typeof(DateTime?) => ParseHL7Date(fieldValue),
+						Type t when t == typeof(int) || t == typeof(int?) => int.TryParse(fieldValue, out int intValue) ? intValue : null,
+						Type t when t == typeof(long) || t == typeof(long?) => long.TryParse(fieldValue, out long longValue) ? longValue : null,
+						Type t when t == typeof(char) => fieldValue[0],
+						Type t when t == typeof(List<string>) => fieldValue.Split('~', StringSplitOptions.RemoveEmptyEntries).ToList(),
+						Type t when t == typeof(List<DateTime>) =>
+							fieldValue.Split('~', StringSplitOptions.RemoveEmptyEntries)
+									  .Select(ParseHL7Date)
+									  .Where(d => d.HasValue)
+									  .Select(d => d.Value)
+									  .ToList(),
+						_ => Convert.ChangeType(fieldValue, prop.PropertyType)
+					};
+					prop.SetValue(segmentObj, convertedValue);
+				}
+				catch (Exception ex)
+				{
+					Console.WriteLine($"Error mapping field '{fieldValue}' to property '{prop.Name}' of type '{prop.PropertyType.Name}': {ex.Message}");
+				}
+			}
+			return segmentObj;
+		}
 
     private DateTime ? ParseHL7Date(string hl7Date) {
       if (string.IsNullOrWhiteSpace(hl7Date))
         return null;
 
-      // Define a comprehensive list of possible date formats.
-      string[] formats = new [] {
-        "yyyyMMdd",
-        "yyyyMMddHHmmss",
-        "yyyyMMddHHmm",
-        "yyyy-MM-dd",
-        "yyyy-MM-ddTHH:mm:ss",
-        "MM/dd/yyyy",
-        "MM/dd/yyyy HH:mm:ss",
-        "dd-MMM-yyyy",
-        "dd/MM/yyyy",
-        "dd.MM.yyyy",
-        "M/d/yyyy",
-        "M/d/yyyy h:mm:ss tt"
-      };
+			// Define a comprehensive list of possible date formats.
+			string[] formats = new[]
+			{
+		"yyyyMMdd",
+		"yyyyMMddHHmmss",
+		"yyyyMMddHHmm",
+		"yyyy-MM-dd",
+		"yyyy-MM-ddTHH:mm:ss",
+		"MM/dd/yyyy",
+		"MM/dd/yyyy HH:mm:ss",
+		"dd-MMM-yyyy",
+		"dd/MM/yyyy",
+		"dd.MM.yyyy",
+		"M/d/yyyy",
+		"M/d/yyyy h:mm:ss tt"
+        // Add more formats as needed.
+    };
 
       // First, try parsing with the defined formats.
       if (DateTime.TryParseExact(hl7Date, formats, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime parsedDate))

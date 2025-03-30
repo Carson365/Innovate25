@@ -1,0 +1,78 @@
+﻿@using BlazorApp.Data
+@using Humanizer
+@using System.Linq
+
+<div class="box hl7-message">
+    @* Loop through each segment property in msg *@
+    @foreach (var segmentProperty in msg.GetType().GetProperties())
+    {
+        var segmentData = segmentProperty.GetValue(msg);
+        if (segmentData != null)
+        {
+            <h4>@segmentProperty.Name</h4>
+            @* Check if segmentData is an enumerable (like a List) and not a string *@
+            if (segmentData is System.Collections.IEnumerable enumerable && !(segmentData is string))
+            {
+                int index = 0;
+                foreach (var item in enumerable)
+                {
+                    <div class="hl7-segment-item">
+                        <h5>@segmentProperty.Name Item @index</h5>
+                        @foreach (var field in item.GetType().GetProperties())
+                        {
+                            var fieldValue = field.GetValue(item);
+                            if (fieldValue != null && !string.IsNullOrWhiteSpace(fieldValue.ToString()))
+                            {
+                                <p>
+                                    <strong>@field.Name.Humanize(LetterCasing.Title): </strong>
+                                    @{
+                                        // Check if the field value is itself an enumerable collection (but not a string)
+                                        if (fieldValue is System.Collections.IEnumerable innerEnumerable && !(fieldValue is string))
+                                        {
+                                            var list = innerEnumerable.Cast<object>();
+                                            @string.Join(", ", list)
+                                        }
+                                        else
+                                        {
+                                            @fieldValue.ToString()
+                                        }
+                                    }
+                                </p>
+                            }
+                        }
+                    </div>
+                    index++;
+                }
+            }
+            else
+            {
+                @* If segmentData is a single object rather than a list, loop through its fields directly *@
+                @foreach (var field in segmentData.GetType().GetProperties())
+                {
+                    var fieldValue = field.GetValue(segmentData);
+                    if (fieldValue != null && !string.IsNullOrWhiteSpace(fieldValue.ToString()))
+                    {
+                        <p>
+                            <strong>@field.Name.Humanize(LetterCasing.Title): </strong>
+                            @{
+                                if (fieldValue is System.Collections.IEnumerable innerEnumerable && !(fieldValue is string))
+                                {
+                                    var list = innerEnumerable.Cast<object>();
+                                    @string.Join(", ", list)
+                                }
+                                else
+                                {
+                                    @fieldValue.ToString()
+                                }
+                            }
+                        </p>
+                    }
+                }
+            }
+        }
+    }
+</div>
+
+@code {
+    [Parameter] public Tools.Message msg { get; set; } = default!;
+}

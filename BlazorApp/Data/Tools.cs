@@ -1,4 +1,6 @@
-﻿namespace BlazorApp.Data
+﻿using NHapi.Model.V21.Segment;
+
+namespace BlazorApp.Data
 {
 	public class Tools
 	{
@@ -13,7 +15,7 @@
 			public string? ReceivingFacility { get; set; }
 			public required DateTime DateTimeOfMessage { get; set; }
 			public string? Security { get; set; }
-			public required string MessageType { get; set; }
+			public required List<string> MessageType { get; set; }
 			public required string MessageControlId { get; set; }
 			public required string ProcessingId { get; set; }
 			public required string VersionId { get; set; }
@@ -92,7 +94,7 @@
 		{
 			public int? SetIdPV1 { get; set; }
 			public required string PatientClass { get; set; }
-			public string? AssignedPatientLocation { get; set; }
+			public List<string?> AssignedPatientLocation { get; set; }
 			public string? AdmissionType { get; set; }
 			public string? PreadmitNumber { get; set; }
 			public string? PriorPatientLocation { get; set; }
@@ -212,6 +214,29 @@
 			// Include other fields as needed.
 		}
 
+		public class OBX
+		{
+			public int? SetID { get; set; }
+			public string? ValueType { get; set; }
+			public string? ObservationIdentifier { get; set; }
+			public string? ObservationSubID { get; set; }
+			public string? ObservationValue { get; set; }
+			public string? Units { get; set; }
+			public string? ReferencesRange { get; set; }
+			public List<string>? AbnormalFlags { get; set; }
+			public decimal? Probability { get; set; }
+			public List<string>? NatureOfAbnormalTest { get; set; }
+			public string? ObservationResultStatus { get; set; }
+			public DateTime? EffectiveDateOfReferenceRange { get; set; }
+			public string? UserDefinedAccessChecks { get; set; }
+			public DateTime? DateTimeOfObservation { get; set; }
+			public string? ProducersID { get; set; }
+			public List<string>? ResponsibleObserver { get; set; }
+			public List<string>? ObservationMethod { get; set; }
+			public List<string>? EquipmentInstanceIdentifier { get; set; }
+			public DateTime? DateTimeOfAnalysis { get; set; }
+		}
+
 		public class Message
 		{
 			public MSH? MessageHeader { get; set; }
@@ -220,7 +245,7 @@
 			public PV1? PatientVisit { get; set; }
 			public OBR? ObservationRequest { get; set; }
 			public ORC? CommonOrder { get; set; }
-			// Add more segments as needed.
+			public List<OBX>? ObservationResult { get; set; }
 		}
 
 

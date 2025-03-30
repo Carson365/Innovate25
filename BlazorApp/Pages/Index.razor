@@ -9,103 +9,85 @@
 
 <!-- Search forms and employee list can remain as before -->
 <form>
-    <input style="margin-top: 1em;" type="text" placeholder="Search an ID"
-    @bind="EmployeeService.searchId"
-    @bind:event="oninput"
-    @bind:after="SearchEmployee" />
+	<input type="text" placeholder="Enter search term"
+		   @bind="searchTerm"
+		   @bind:event="oninput"
+		   @bind:after="Search" />
+	<label for="searchType"> Search by:</label>
+	<select id="searchType" @bind="selectedSearchType">
+		<option value="Message Control ID">Message Control ID</option>
+		<option value="MRN">MRN</option>
+		<option value="Last Name">Last Name</option>
+	</select>
 </form>
-<form>
-    <input type="text" placeholder="Search a Name"
-    @bind="EmployeeService.searchName"
-    @bind:event="oninput"
-    @bind:after="SearchEmployee" />
-</form>
+
 
 <body>
-    <div class="container">
-        <!-- Display parsed HL7 messages -->
-        @if (!EmployeeService.recordsLoading)
-        {
-            <h3>HL7 Messages</h3>
-            @foreach (Tools.Message msg in EmployeeService.hl7Messages.Take(10))
-            {
-                <div class="box hl7-message">
-                    @* Loop through each segment property in msg *@
-                    @foreach (var segmentProperty in msg.GetType().GetProperties())
-                    {
-                        var segmentData = segmentProperty.GetValue(msg);
-                        if (segmentData != null)
-                        {
-                            <h4>@segmentProperty.Name</h4>
-                            @foreach (var field in segmentData.GetType().GetProperties())
-                            {
-                                var fieldValue = field.GetValue(segmentData);
-                                if (fieldValue != null && !string.IsNullOrWhiteSpace(fieldValue.ToString()))
-                                {
-                                    <p>
-                                        <strong>@field.Name.Humanize(LetterCasing.Title): </strong>
-                                        @{
-                                            // Check if the field is an enumerable collection (but not a string)
-                                            if (fieldValue is System.Collections.IEnumerable enumerable && !(fieldValue is string))
-                                            {
-                                                var list = enumerable.Cast<object>();
-                                                @string.Join(", ", list)
-                                            }
-                                            else
-                                            {
-                                                @fieldValue.ToString()
-                                            }
-                                        }
-                                    </p>
-                                }
-                            }
-                        }
-                    }
-                </div>
+	<div class="container">
+		@if (EmployeeService.recordsLoading)
+		{
+			<p>Loading records, please wait...</p>
+		}
+		else if (@* EmployeeService.searchResults != null &&  *@visibleCount != 0)
+		{
+			@foreach (Tools.Message msg in EmployeeService.hl7Messages
+					.OrderBy(record => record.MessageHeader.DateTimeOfMessage)
+					.Where(x => x.MessageHeader.MessageControlId == searchTerm || selectedSearchType != "Message Control ID")
+					.Where(y => y.PatientIdentification.PatientID == searchTerm || selectedSearchType != "MRN")
+					.Where(z => z.PatientIdentification.PatientNames/*.FamilyName*/.Contains(searchTerm) || selectedSearchType != "Last Name")
+					.Take(visibleCount))
+			{
+				
 
-            }
-        }
-        else if (EmployeeService.isLoading)
-        {
-            <p>Loading employees, please wait...</p>
-        }
-
-        <!-- Display employee search results -->
-        @if (EmployeeService.searchResults != null && EmployeeService.searchResults.Any())
-        {
-            @foreach (Employee item in EmployeeService.searchResults)
-            {
-                <div class="box">
-                    <EmployeeCard Employee="@item"></EmployeeCard>
-                </div>
-            }
-        }
-    </div>
+				<RecordCard msg="@msg" />
+			}
+			if (EmployeeService.hl7Messages.Count == 0)
+			{
+				<p>No results</p>
+			}
+			if (EmployeeService.hl7Messages.Count > 10 && EmployeeService.hl7Messages.Count > visibleCount)
+			{
+				<div class="box" style="width:calc(90% + 30px); height:10%;">
+					<center>
+						Showing @Math.Min(/* EmployeeService.searchResults.Count,  */999999, visibleCount) of @* @EmployeeService.searchResults.Count *@ matching employees.<br />
+						<a class="underline" @onclick="() => visibleCount += 10">Click here to see more</a>
+					</center>
+				</div>
+			}
+		}
+		else if (EmployeeService.isLoading)
+		{
+			<p>Loading employees, please wait...</p>
+		}
+	</div>
 </body>
 
 <div class="bottomFade"></div>
 
 @code {
-    private int visibleCount;
+	private int visibleCount = 10;
 
-    protected override async Task OnAfterRenderAsync(bool first)
-    {
-        if (first)
-        {
-            // Load employees and HL7 records in the background.
-            // _ = EmployeeService.LoadEmployeesAsync();
-            _ = EmployeeService.LoadHL7RecordsAsync();
-            EmployeeService.OnHL7MessagesLoaded += StateHasChanged; // Update UI when messages load
-        }
+	private string selectedSearchType;
+	private string searchTerm = "";
 
-    }
 
-    private void SearchEmployee()
-    {
-        visibleCount = 100; // Reset visibleCount on new search
-        EmployeeService.SearchEmployees();
+	protected override async Task OnAfterRenderAsync(bool first)
+	{
+		if (first)
+		{
+			_ = EmployeeService.LoadHL7RecordsAsync();
+			EmployeeService.OnHL7MessagesLoaded += StateHasChanged; // Update UI when messages load
+		}
 
-        if (string.IsNullOrEmpty(EmployeeService.searchId) && string.IsNullOrEmpty(EmployeeService.searchName))
-            visibleCount = 0;
-    }
+	}
+
+	private void Search()
+	{
+		visibleCount = 10; // Reset visibleCount on new search
+		//EmployeeService.SearchEmployees();
+
+		// if (string.IsNullOrEmpty(EmployeeService.searchId) && string.IsNullOrEmpty(EmployeeService.searchName))
+		if (string.IsNullOrEmpty(searchTerm)) visibleCount = 0;
+		StateHasChanged();
+	}
 }
