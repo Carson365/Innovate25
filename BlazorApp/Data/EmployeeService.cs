@@ -35,56 +35,65 @@ namespace BlazorApp.Data
 			OnEmployeesLoaded?.Invoke();
 		}
 
-    public async Task LoadHL7RecordsAsync() {
-      var time1 = DateTime.Now;
-      string filePath = Path.Combine("Data", "source_hl7_messages_v2.hl7");
-      if (!File.Exists(filePath)) {
-        Console.WriteLine("HL7 file not found.");
-        return;
-      }
+		public async Task LoadHL7RecordsAsync()
+		{
+			var time1 = DateTime.Now;
+			string filePath = Path.Combine("Data", "source_hl7_messages_v2.hl7");
+			if (!File.Exists(filePath))
+			{
+				Console.WriteLine("HL7 file not found.");
+				return;
+			}
 
-      string hl7Content = await File.ReadAllTextAsync(filePath);
-      ParseHL7Messages(hl7Content);
-      recordsLoading = false;
-      OnHL7MessagesLoaded?.Invoke();
+			string hl7Content = await File.ReadAllTextAsync(filePath);
+			ParseHL7Messages(hl7Content);
+			recordsLoading = false;
+			OnHL7MessagesLoaded?.Invoke();
 
-      PrintSensitiveDataDetails();
+			PrintSensitiveDataDetails();
 
-      Console.WriteLine($"Loaded {hl7Messages.Count} HL7 messages in {(DateTime.Now - time1).TotalMilliseconds} ms.");
-    }
+			Console.WriteLine($"Loaded {hl7Messages.Count} HL7 messages in {(DateTime.Now - time1).TotalMilliseconds} ms.");
+		}
 
-    private void ParseHL7Messages(string hl7Content) {
-      int v = 0;
+		private void ParseHL7Messages(string hl7Content)
+		{
+			int v = 0;
 
-      var messages = Regex.Split(hl7Content, @"(?=MSH\|)");
+			var messages = Regex.Split(hl7Content, @"(?=MSH\|)");
 
-      foreach(var message in messages.Where(m => !string.IsNullOrWhiteSpace(m))) {
-        v++;
-        string processedMessage = PreprocessMessage(message);
-        try {
-          var myMessage = ConvertHL7ToMessage(processedMessage);
-          hl7Messages.Add(myMessage);
-          //Console.WriteLine("Created custom Message object from HL7 message.");
-        } catch (Exception ex) {
-          Console.WriteLine("Error processing HL7 message: " + ex.Message);
-        }
-      }
-      Console.WriteLine($"Parsed {v} HL7 messages.");
-    }
+			foreach (var message in messages.Where(m => !string.IsNullOrWhiteSpace(m)))
+			{
+				v++;
+				string processedMessage = PreprocessMessage(message);
+				try
+				{
+					var myMessage = ConvertHL7ToMessage(processedMessage);
+					hl7Messages.Add(myMessage);
+					//Console.WriteLine("Created custom Message object from HL7 message.");
+				}
+				catch (Exception ex)
+				{
+					Console.WriteLine("Error processing HL7 message: " + ex.Message);
+				}
+			}
+			Console.WriteLine($"Parsed {v} HL7 messages.");
+		}
 
-    private Tools.Message ConvertHL7ToMessage(string message) {
-      var msg = new Tools.Message();
+		private Tools.Message ConvertHL7ToMessage(string message)
+		{
+			var msg = new Tools.Message();
 
 			// Map from segment identifier to tuple: (segment type, property name on Tools.Message)
 			var segmentTypeMapping = new Dictionary<string, (Type SegmentType, string MessagePropName)>
-			{
-				{ "MSH", (typeof(Tools.MSH), "MessageHeader") },
-				{ "EVN", (typeof(Tools.EVN), "EventType") },
-				{ "PID", (typeof(Tools.PID), "PatientIdentification") },
-				{ "PV1", (typeof(Tools.PV1), "PatientVisit") },
-				{ "OBR", (typeof(Tools.OBR), "ObservationRequest") },
-				{ "ORC", (typeof(Tools.ORC), "CommonOrder") }
-			};
+	{
+		{ "MSH", (typeof(Tools.MSH), "MessageHeader") },
+		{ "EVN", (typeof(Tools.EVN), "EventType") },
+		{ "PID", (typeof(Tools.PID), "PatientIdentification") },
+		{ "PV1", (typeof(Tools.PV1), "PatientVisit") },
+		{ "OBR", (typeof(Tools.OBR), "ObservationRequest") },
+		{ "ORC", (typeof(Tools.ORC), "CommonOrder") },
+		{ "OBX", (typeof(Tools.OBX), "ObservationResult") }
+	};
 
 			var segments = message.Split('\r');
 			foreach (var segment in segments.Where(s => !string.IsNullOrWhiteSpace(s)))
@@ -95,22 +104,42 @@ namespace BlazorApp.Data
 				{
 					object segmentObj = MapSegmentToObject(fields, mapping.SegmentType);
 					PropertyInfo? msgProp = typeof(Tools.Message).GetProperty(mapping.MessagePropName);
-					msgProp?.SetValue(msg, segmentObj);
+
+					// Special handling for OBX segments: add to list rather than overwrite.
+					if (segType.Equals("OBX", StringComparison.OrdinalIgnoreCase))
+					{
+						// Get the existing list or initialize a new one if it's null.
+						var currentList = msgProp?.GetValue(msg) as IList;
+						if (currentList == null)
+						{
+							// Create a new List<OBX> instance.
+							currentList = (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(mapping.SegmentType))!;
+						}
+						// Add the new OBX segment.
+						currentList.Add(segmentObj);
+						msgProp?.SetValue(msg, currentList);
+					}
+					else
+					{
+						msgProp?.SetValue(msg, segmentObj);
+					}
 				}
 			}
 			return msg;
 		}
+
 
 		private object MapSegmentToObject(string[] fields, Type targetType)
 		{
 			object segmentObj = Activator.CreateInstance(targetType)
 								?? throw new InvalidOperationException("Unable to create instance of " + targetType.Name);
 
-      var properties = targetType.GetProperties();
-      for (int i = 0; i < properties.Length; i++) {
-        int fieldIndex = i + 1;
-        if (fields.Length <= fieldIndex || string.IsNullOrWhiteSpace(fields[fieldIndex]))
-          continue;
+			var properties = targetType.GetProperties();
+			for (int i = 0; i < properties.Length; i++)
+			{
+				int fieldIndex = i + 1;
+				if (fields.Length <= fieldIndex || string.IsNullOrWhiteSpace(fields[fieldIndex]))
+					continue;
 
 				string fieldValue = fields[fieldIndex];
 				PropertyInfo prop = properties[i];
@@ -122,9 +151,9 @@ namespace BlazorApp.Data
 						Type t when t == typeof(int) || t == typeof(int?) => int.TryParse(fieldValue, out int intValue) ? intValue : null,
 						Type t when t == typeof(long) || t == typeof(long?) => long.TryParse(fieldValue, out long longValue) ? longValue : null,
 						Type t when t == typeof(char) => fieldValue[0],
-						Type t when t == typeof(List<string>) => fieldValue.Split('~', StringSplitOptions.RemoveEmptyEntries).ToList(),
+						Type t when t == typeof(List<string>) => fieldValue.Split('^', StringSplitOptions.RemoveEmptyEntries).ToList(),
 						Type t when t == typeof(List<DateTime>) =>
-							fieldValue.Split('~', StringSplitOptions.RemoveEmptyEntries)
+							fieldValue.Split('^', StringSplitOptions.RemoveEmptyEntries)
 									  .Select(ParseHL7Date)
 									  .Where(d => d.HasValue)
 									  .Select(d => d.Value)
@@ -141,9 +170,10 @@ namespace BlazorApp.Data
 			return segmentObj;
 		}
 
-    private DateTime ? ParseHL7Date(string hl7Date) {
-      if (string.IsNullOrWhiteSpace(hl7Date))
-        return null;
+		private DateTime? ParseHL7Date(string hl7Date)
+		{
+			if (string.IsNullOrWhiteSpace(hl7Date))
+				return null;
 
 			// Define a comprehensive list of possible date formats.
 			string[] formats = new[]
@@ -159,149 +189,152 @@ namespace BlazorApp.Data
 		"dd/MM/yyyy",
 		"dd.MM.yyyy",
 		"M/d/yyyy",
-		"M/d/yyyy h:mm:ss tt"
+		"M/d/yyyy h:mm:ss tt",
+		"yyyyMMddHHmmzzz"
         // Add more formats as needed.
     };
 
-      // First, try parsing with the defined formats.
-      if (DateTime.TryParseExact(hl7Date, formats, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime parsedDate))
-        return parsedDate;
+			// First, try parsing with the defined formats.
+			if (DateTime.TryParseExact(hl7Date, formats, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime parsedDate))
+				return parsedDate;
 
-      // Fallback: attempt to parse using DateTime.TryParse, which handles many common formats.
-      if (DateTime.TryParse(hl7Date, out parsedDate))
-        return parsedDate;
+			// Fallback: attempt to parse using DateTime.TryParse, which handles many common formats.
+			if (DateTime.TryParse(hl7Date, out parsedDate))
+				return parsedDate;
 
-      // Return null if parsing fails.
-      return null;
-    }
+			// Return null if parsing fails.
+			return null;
+		}
 
-    private string PreprocessMessage(string message) {
-      // Define allowed OBX-2 values.
-      var allowedTypes = new HashSet < string > (StringComparer.OrdinalIgnoreCase) {
-        "ST",
-        "NM",
-        "TX",
-        "FT",
-        "CE",
-        "DT",
-        "TM",
-        "TS",
-        "ID",
-        "SI"
-      };
 
-      var lines = message.Split(new [] {
-        "\r\n",
-        "\n",
-        "\r"
-      }, StringSplitOptions.None);
-      for (int i = 0; i < lines.Length; i++) {
-        if (lines[i].StartsWith("MSH") && lines[i].Length > 3) {
-          char fieldSeparator = lines[i][3];
-          var fields = lines[i].Substring(4).Split(fieldSeparator).ToList();
-          if (fields.Any() && (fields[0].Length != 4 || fields[0].Distinct().Count() != 4))
-            fields[0] = "^~\\&";
-          lines[i] = "MSH" + fieldSeparator + string.Join(fieldSeparator.ToString(), fields);
-        } else if (lines[i].StartsWith("OBX|")) {
-          var fields = lines[i].Split('|').ToList();
-          if (fields.Count >= 6 && !string.IsNullOrWhiteSpace(fields[5])) {
-            if (string.IsNullOrWhiteSpace(fields[2]) || !allowedTypes.Contains(fields[2].Trim()))
-              fields[2] = "ST";
-          }
-          lines[i] = string.Join("|", fields);
-        }
-      }
-      return string.Join("\r", lines);
-    }
+		private string PreprocessMessage(string message)
+		{
+			// Define allowed OBX-2 values.
+			var allowedTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+			{
+				"ST", "NM", "TX", "FT", "CE", "DT", "TM", "TS", "ID", "SI"
+			};
 
-    public void SearchEmployees() {
-      searchResults = employeeList
-        .Where(employee =>
-          employee.ID.Contains(searchId, StringComparison.OrdinalIgnoreCase) &&
-          employee.Name.Contains(searchName, StringComparison.OrdinalIgnoreCase))
-        .ToList();
-    }
+			var lines = message.Split(new[] { "\r\n", "\n", "\r" }, StringSplitOptions.None);
+			for (int i = 0; i < lines.Length; i++)
+			{
+				if (lines[i].StartsWith("MSH") && lines[i].Length > 3)
+				{
+					char fieldSeparator = lines[i][3];
+					var fields = lines[i].Substring(4).Split(fieldSeparator).ToList();
+					if (fields.Any() && (fields[0].Length != 4 || fields[0].Distinct().Count() != 4))
+						fields[0] = "^~\\&";
+					lines[i] = "MSH" + fieldSeparator + string.Join(fieldSeparator.ToString(), fields);
+				}
+				else if (lines[i].StartsWith("OBX|"))
+				{
+					var fields = lines[i].Split('|').ToList();
+					if (fields.Count >= 6 && !string.IsNullOrWhiteSpace(fields[5]))
+					{
+						if (string.IsNullOrWhiteSpace(fields[2]) || !allowedTypes.Contains(fields[2].Trim()))
+							fields[2] = "ST";
+					}
+					lines[i] = string.Join("|", fields);
+				}
+			}
+			return string.Join("\r", lines);
+		}
 
-    private static List < Employee > GetEmployees() {
-      var engine = new FileHelperEngine < CSVEmployee > {
-        Options = {
-          IgnoreFirstLines = 1
-        }
-      };
-      // Filter out potential null records directly.
-      var records = engine.ReadFile(Path.Combine("Data", "orgchart_faux.csv")).Where(r => r != null);
+		public void SearchEmployees()
+		{
+			searchResults = employeeList
+				.Where(employee =>
+					employee.ID.Contains(searchId, StringComparison.OrdinalIgnoreCase) &&
+					employee.Name.Contains(searchName, StringComparison.OrdinalIgnoreCase))
+				.ToList();
+		}
 
-      var employees = new List < Employee > ();
-      foreach(var record in records) {
-        var employee = new Employee {
-          ID = record.Emp34Id,
-            Name = $"{record.EmpFirstName} {record.EmpLastName}",
-            Email = record.EmpEmailAddress,
-            Position = record.EmpPositionDesc,
-            Location = record.EmpLocationCode,
-            Anniversary = string.IsNullOrEmpty(record.EmpAnnivDate) ? "Null" : record.EmpAnnivDate,
-            Up = null,
-            Downs = new List < Employee > ()
-        };
-        employees.Add(employee);
-        if (!locationNames.ContainsKey(record.EmpLocationCode))
-          locationNames.Add(record.EmpLocationCode, record.EmpLocationDesc);
-      }
+		private static List<Employee> GetEmployees()
+		{
+			var engine = new FileHelperEngine<CSVEmployee> { Options = { IgnoreFirstLines = 1 } };
+			// Filter out potential null records directly.
+			var records = engine.ReadFile(Path.Combine("Data", "orgchart_faux.csv")).Where(r => r != null);
 
-      var employeeDict = employees.ToDictionary(e => e.ID);
-      foreach(var record in records) {
-        if (!string.IsNullOrEmpty(record.Mgr34Id) &&
-          employeeDict.TryGetValue(record.Emp34Id, out
-            var employee) &&
-          employeeDict.TryGetValue(record.Mgr34Id, out
-            var manager)) {
-          employee.Up = manager;
-          manager.Downs.Add(employee);
-        }
-      }
-      return employees;
-    }
+			var employees = new List<Employee>();
+			foreach (var record in records)
+			{
+				var employee = new Employee
+				{
+					ID = record.Emp34Id,
+					Name = $"{record.EmpFirstName} {record.EmpLastName}",
+					Email = record.EmpEmailAddress,
+					Position = record.EmpPositionDesc,
+					Location = record.EmpLocationCode,
+					Anniversary = string.IsNullOrEmpty(record.EmpAnnivDate) ? "Null" : record.EmpAnnivDate,
+					Up = null,
+					Downs = new List<Employee>()
+				};
+				employees.Add(employee);
+				if (!locationNames.ContainsKey(record.EmpLocationCode))
+					locationNames.Add(record.EmpLocationCode, record.EmpLocationDesc);
+			}
 
-    public void PrintSensitiveDataDetails() {
-      List < object > redactedPatients = new();
+			var employeeDict = employees.ToDictionary(e => e.ID);
+			foreach (var record in records)
+			{
+				if (!string.IsNullOrEmpty(record.Mgr34Id) &&
+					employeeDict.TryGetValue(record.Emp34Id, out var employee) &&
+					employeeDict.TryGetValue(record.Mgr34Id, out var manager))
+				{
+					employee.Up = manager;
+					manager.Downs.Add(employee);
+				}
+			}
+			return employees;
+		}
 
-      foreach(BlazorApp.Data.Tools.Message msg in hl7Messages.Take(10)) {
-        if (msg.PatientIdentification != null) {
-          var patientInfo = new {
-            Names = msg.PatientIdentification.PatientNames ?? new List < string > (),
-              DateOfBirth = msg.PatientIdentification.DateTimeOfBirth?.ToShortDateString() ?? "Unknown",
-              Addresses = msg.PatientIdentification.PatientAddresses ?? new List < string > (),
-              HomePhones = msg.PatientIdentification.HomePhoneNumbers ?? new List < string > (),
-              BusinessPhones = msg.PatientIdentification.BusinessPhoneNumbers ?? new List < string > (),
-              SSN = msg.PatientIdentification.SSNNumber ?? "N/A",
-              //Email = msg.PatientIdentification.Email ?? "N/A",
-              MRNs = msg.PatientIdentification.PatientIdentifierList ?? new List < string > (),
-              PatientAccountNumber = msg.PatientIdentification.PatientAccountNumber ?? "N/A",
-              Age = (msg.PatientIdentification.DateTimeOfBirth.HasValue) ?
-              Math.Min(90, DateTime.Now.Year - msg.PatientIdentification.DateTimeOfBirth.Value.Year -
-                (DateTime.Now < msg.PatientIdentification.DateTimeOfBirth.Value.AddYears(DateTime.Now.Year - msg.PatientIdentification.DateTimeOfBirth.Value.Year) ? 1 : 0)) :
-              (int ? ) null
-          };
 
-          redactedPatients.Add(patientInfo);
-        }
-      }
 
-      // Console log to output the stored redacted patient data
-      Console.WriteLine("Redacted Patient Data:");
-      foreach(var patient in redactedPatients) {
-        Console.WriteLine($"Name(s): {string.Join(", ", ((dynamic)patient).Names)}");
-        Console.WriteLine($"Birthday: {((dynamic)patient).DateOfBirth}");
-        Console.WriteLine($"Age: {((dynamic)patient).Age}");
-        Console.WriteLine($"Address: {string.Join(", ", ((dynamic)patient).Addresses)}");
-        Console.WriteLine($"Home Phone(s): {string.Join(", ", ((dynamic)patient).HomePhones)}");
-        Console.WriteLine($"Business Phone(s): {string.Join(", ", ((dynamic)patient).BusinessPhones)}");
-        Console.WriteLine($"SSN: {((dynamic)patient).SSN}");
-        //Console.WriteLine($"Email: {((dynamic)patient).Email}");
-        Console.WriteLine($"MRN(s): {string.Join(", ", ((dynamic)patient).MRNs)}");
-        Console.WriteLine($"Account Number: {((dynamic)patient).PatientAccountNumber}");
-        Console.WriteLine("----------------------------");
-      }
-    }
-  }
+		public void PrintSensitiveDataDetails()
+		{
+			List<object> redactedPatients = new();
+
+			foreach (BlazorApp.Data.Tools.Message msg in hl7Messages.Take(10))
+			{
+				if (msg.PatientIdentification != null)
+				{
+					var patientInfo = new
+					{
+						Names = msg.PatientIdentification.PatientNames ?? new List<string>(),
+						DateOfBirth = msg.PatientIdentification.DateTimeOfBirth?.ToShortDateString() ?? "Unknown",
+						Addresses = msg.PatientIdentification.PatientAddresses ?? new List<string>(),
+						HomePhones = msg.PatientIdentification.HomePhoneNumbers ?? new List<string>(),
+						BusinessPhones = msg.PatientIdentification.BusinessPhoneNumbers ?? new List<string>(),
+						SSN = msg.PatientIdentification.SSNNumber ?? "N/A",
+						//Email = msg.PatientIdentification.Email ?? "N/A",
+						MRNs = msg.PatientIdentification.PatientIdentifierList ?? new List<string>(),
+						PatientAccountNumber = msg.PatientIdentification.PatientAccountNumber ?? "N/A",
+						Age = (msg.PatientIdentification.DateTimeOfBirth.HasValue) ?
+						Math.Min(90, DateTime.Now.Year - msg.PatientIdentification.DateTimeOfBirth.Value.Year -
+						  (DateTime.Now < msg.PatientIdentification.DateTimeOfBirth.Value.AddYears(DateTime.Now.Year - msg.PatientIdentification.DateTimeOfBirth.Value.Year) ? 1 : 0)) :
+						(int?)null
+					};
+
+					redactedPatients.Add(patientInfo);
+				}
+			}
+
+			// Console log to output the stored redacted patient data
+			Console.WriteLine("Redacted Patient Data:");
+			foreach (var patient in redactedPatients)
+			{
+				Console.WriteLine($"Name(s): {string.Join(", ", ((dynamic)patient).Names)}");
+				Console.WriteLine($"Birthday: {((dynamic)patient).DateOfBirth}");
+				Console.WriteLine($"Age: {((dynamic)patient).Age}");
+				Console.WriteLine($"Address: {string.Join(", ", ((dynamic)patient).Addresses)}");
+				Console.WriteLine($"Home Phone(s): {string.Join(", ", ((dynamic)patient).HomePhones)}");
+				Console.WriteLine($"Business Phone(s): {string.Join(", ", ((dynamic)patient).BusinessPhones)}");
+				Console.WriteLine($"SSN: {((dynamic)patient).SSN}");
+				//Console.WriteLine($"Email: {((dynamic)patient).Email}");
+				Console.WriteLine($"MRN(s): {string.Join(", ", ((dynamic)patient).MRNs)}");
+				Console.WriteLine($"Account Number: {((dynamic)patient).PatientAccountNumber}");
+				Console.WriteLine("----------------------------");
+			}
+		}
+	}
 }
