@@ -50,6 +50,7 @@ namespace BlazorApp.Data
 			ParseHL7Messages(hl7Content);
 			recordsLoading = false;
 			OnHL7MessagesLoaded?.Invoke();
+			PrintSensitiveDataDetails();
 
 			Console.WriteLine($"Loaded {hl7Messages.Count} HL7 messages in {(DateTime.Now - time1).TotalMilliseconds} ms.");
 		}
@@ -315,5 +316,112 @@ namespace BlazorApp.Data
 			}
 			return employees;
 		}	
+
+public void PrintSensitiveDataDetails() 
+{
+    List<object> redactedPatients = new();
+
+    if (hl7Messages == null || !hl7Messages.Any()) 
+    {
+        return; // Exit if there are no HL7 messages
+    }
+
+    foreach (BlazorApp.Data.Tools.Message msg in hl7Messages) 
+    {
+        if (msg.PatientIdentification != null) 
+        {
+            string extractedEmail = ""; // Initialize extractedEmail here
+
+            // Check if ObservationResult is not null and contains values
+            if (msg.ObservationResult != null && msg.ObservationResult.Any()) 
+            {
+                foreach (var obx in msg.ObservationResult) 
+                {
+                    if (obx.ObservationValue != null && obx.ObservationValue is List<string> observationValues) 
+                    {
+                        // Iterate through each string in the observation value list
+                        foreach (var observationValue in observationValues) 
+                        {
+                            if (!string.IsNullOrEmpty(observationValue)) 
+                            {
+                                // Use a regular expression to extract a valid email from the string
+                                var emailMatch = Regex.Match(observationValue, @"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b");
+                                
+                                if (emailMatch.Success) 
+                                {
+                                    extractedEmail = emailMatch.Value; // Extract the first valid email
+                                    break; // Stop after finding the first email
+                                }
+                            }
+                        }
+                    }
+
+                    // If email is found, stop further searching in the ObservationResult
+                    if (!string.IsNullOrEmpty(extractedEmail)) 
+                    {
+                        break;
+                    }
+                }
+            }
+                // Get the lengths of the patient data attributes
+                int nameLength = msg.PatientIdentification.PatientName?.GivenName?.Length ?? 0; // Redact given name
+                int dobLength = msg.PatientIdentification.DateTimeOfBirth?.ToString("yyyyMMdd").Length ?? 0; // Use date string length for DOB
+                int addressLength = msg.PatientIdentification.PatientAddress?.StreetAddress?.Length ?? 0; // Redact street address
+                int homePhoneLength = msg.PatientIdentification.HomePhoneNumbers?.TelephoneNumber?.Length ?? 0; // Redact phone number
+                int businessPhoneLength = msg.PatientIdentification.BusinessPhoneNumbers?.TelephoneNumber?.Length ?? 0; // Redact business phone number
+                int ssnLength = msg.PatientIdentification.SSNNumber?.Length ?? 0;
+                int emailLength = extractedEmail.Length;
+                int mrnLength = msg.PatientIdentification.PatientIdentifierList?.IdNumber?.Length ?? 0; // Redact patient identifier
+                int accountNumberLength = msg.PatientIdentification.PatientAccountNumber?.Length ?? 0;
+
+                // Create a dynamic object to allow modification of properties
+                dynamic redactedPatientInfo = new 
+                {
+                    Names = new string('*', nameLength), // Redacted names
+                    DateOfBirth = new string('*', dobLength), // Redacted Date of Birth
+                    Addresses = new string('*', addressLength), // Redacted addresses
+                    HomePhones = new string('*', homePhoneLength), // Redacted home phone numbers
+                    BusinessPhones = new string('*', businessPhoneLength), // Redacted business phone numbers
+                    SSN = new string('*', ssnLength), // Redacted SSN
+                    Email = new string('*', emailLength), // Redacted email with the length of the original email
+                    MRNs = new string('*', mrnLength), // Redacted MRNs
+                    PatientAccountNumber = new string('*', accountNumberLength), // Redacted account number
+                    Age = new string('*', 5) // Redacted age as asterisks (you can adjust logic here if needed)
+                };
+
+                redactedPatients.Add(redactedPatientInfo);
+        } 
+        else 
+        {
+            Console.WriteLine("PatientIdentification is null.");
+        }
+    }
+
+    // Console log to output the redacted patient data
+    if (redactedPatients.Any()) 
+    {
+        Console.WriteLine("Redacted Patient Data:");
+        foreach (var patient in redactedPatients) 
+        {
+            Console.WriteLine($"Name(s): {((dynamic)patient).Names}");
+            Console.WriteLine($"Birthday: {((dynamic)patient).DateOfBirth}");
+            Console.WriteLine($"Age: {((dynamic)patient).Age}");
+            Console.WriteLine($"Address: {((dynamic)patient).Addresses}");
+            Console.WriteLine($"Home Phone(s): {((dynamic)patient).HomePhones}");
+            Console.WriteLine($"Business Phone(s): {((dynamic)patient).BusinessPhones}");
+            Console.WriteLine($"SSN: {((dynamic)patient).SSN}");
+            Console.WriteLine($"Email: {((dynamic)patient).Email}");
+            Console.WriteLine($"MRN(s): {((dynamic)patient).MRNs}");
+            Console.WriteLine($"Account Number: {((dynamic)patient).PatientAccountNumber}");
+			Console.WriteLine($"{((dynamic)patient).ToString()}");
+            Console.WriteLine("----------------------------");
+        }
+    } 
+    else 
+    {
+        Console.WriteLine("No patients with extracted emails.");
+    }
+}
+
 	}
 }
