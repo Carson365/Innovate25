@@ -1,9 +1,10 @@
-﻿using NHapi.Model.V21.Segment;
+﻿using static BlazorApp.Data.Classes;
 
 namespace BlazorApp.Data
 {
 	public class Tools
 	{
+
 		// MSH Segment – Message Header
 		public class MSH
 		{
@@ -51,7 +52,7 @@ namespace BlazorApp.Data
 			public string? PatientID { get; set; }
 			public required List<string> PatientIdentifierList { get; set; }
 			public List<string>? AlternatePatientIDs { get; set; }
-			public required List<string> PatientNames { get; set; }
+			public required PatientName PatientName { get; set; }
 			public List<string>? MothersMaidenNames { get; set; }
 			public DateTime? DateTimeOfBirth { get; set; }
 			public string? AdministrativeSex { get; set; }
@@ -97,7 +98,7 @@ namespace BlazorApp.Data
 			public List<string?> AssignedPatientLocation { get; set; }
 			public string? AdmissionType { get; set; }
 			public string? PreadmitNumber { get; set; }
-			public string? PriorPatientLocation { get; set; }
+			public List<string>? PriorPatientLocation { get; set; }
 			public List<string>? AttendingDoctors { get; set; }
 			public List<string>? ReferringDoctors { get; set; }
 			public List<string>? ConsultingDoctors { get; set; }
@@ -130,7 +131,7 @@ namespace BlazorApp.Data
 			public string? DischargeDisposition { get; set; }
 			public string? DischargedToLocation { get; set; }
 			public string? DietType { get; set; }
-			public string? ServicingFacility { get; set; }
+			public List<string>? ServicingFacility { get; set; }
 			public string? BedStatus { get; set; }
 			public string? AccountStatus { get; set; }
 			public string? PendingLocation { get; set; }
@@ -218,9 +219,9 @@ namespace BlazorApp.Data
 		{
 			public int? SetID { get; set; }
 			public string? ValueType { get; set; }
-			public string? ObservationIdentifier { get; set; }
+			public List<string>? ObservationIdentifier { get; set; }
 			public string? ObservationSubID { get; set; }
-			public string? ObservationValue { get; set; }
+			public List<string>? ObservationValue { get; set; }
 			public string? Units { get; set; }
 			public string? ReferencesRange { get; set; }
 			public List<string>? AbnormalFlags { get; set; }
