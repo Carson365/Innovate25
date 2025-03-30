@@ -51,8 +51,6 @@ namespace BlazorApp.Data
 			recordsLoading = false;
 			OnHL7MessagesLoaded?.Invoke();
 
-			PrintSensitiveDataDetails();
-
 			Console.WriteLine($"Loaded {hl7Messages.Count} HL7 messages in {(DateTime.Now - time1).TotalMilliseconds} ms.");
 		}
 
@@ -148,17 +146,28 @@ namespace BlazorApp.Data
 				{
 					object? convertedValue = prop.PropertyType switch
 					{
+						// Existing conversions...
 						Type t when t == typeof(DateTime) || t == typeof(DateTime?) => ParseHL7Date(fieldValue),
 						Type t when t == typeof(int) || t == typeof(int?) => int.TryParse(fieldValue, out int intValue) ? intValue : null,
 						Type t when t == typeof(long) || t == typeof(long?) => long.TryParse(fieldValue, out long longValue) ? longValue : null,
 						Type t when t == typeof(char) => fieldValue[0],
-						Type t when t == typeof(List<string>) => fieldValue.Split('^', StringSplitOptions.RemoveEmptyEntries).ToList(),
+
+						// Explicit branch for List<string>
+						Type t when t == typeof(List<string>) =>
+							fieldValue.Split('^', StringSplitOptions.RemoveEmptyEntries).ToList(),
+
 						Type t when t == typeof(List<DateTime>) =>
 							fieldValue.Split('^', StringSplitOptions.RemoveEmptyEntries)
 									  .Select(ParseHL7Date)
 									  .Where(d => d.HasValue)
 									  .Select(d => d.Value)
 									  .ToList(),
+
+						// Custom type that provides its own parsing from a list of strings
+						Type t when HasFromDelimitedFieldsMethod(t) =>
+							InvokeFromDelimitedFields(t, fieldValue.Split('^', StringSplitOptions.RemoveEmptyEntries).ToList()),
+
+						// Fallback for any other type
 						_ => Convert.ChangeType(fieldValue, prop.PropertyType)
 					};
 					prop.SetValue(segmentObj, convertedValue);
@@ -170,6 +179,24 @@ namespace BlazorApp.Data
 			}
 			return segmentObj;
 		}
+
+		private static bool HasFromDelimitedFieldsMethod(Type t)
+		{
+			return t.GetMethod("FromDelimitedFields", BindingFlags.Public | BindingFlags.Static) != null;
+		}
+
+		private static object InvokeFromDelimitedFields(Type t, List<string> fields)
+		{
+			var method = t.GetMethod("FromDelimitedFields", BindingFlags.Public | BindingFlags.Static);
+			if (method == null)
+				throw new InvalidOperationException($"Type {t.Name} does not implement FromDelimitedFields method.");
+
+			return method.Invoke(null, new object[] { fields });
+		}
+
+
+
+
 
 		private DateTime? ParseHL7Date(string hl7Date)
 		{
@@ -287,55 +314,6 @@ namespace BlazorApp.Data
 				}
 			}
 			return employees;
-		}
-
-
-
-		public void PrintSensitiveDataDetails()
-		{
-			List<object> redactedPatients = new();
-
-			foreach (Tools.Message msg in hl7Messages.Take(10))
-			{
-				if (msg.PatientIdentification != null)
-				{
-					var patientInfo = new
-					{
-						Names = msg.PatientIdentification.PatientName ?? new XTN(),
-						DateOfBirth = msg.PatientIdentification.DateTimeOfBirth?.ToShortDateString() ?? "Unknown",
-						Addresses = msg.PatientIdentification.PatientAddress ?? new List<string>(),
-						HomePhones = msg.PatientIdentification.HomePhoneNumbers ?? new List<string>(),
-						BusinessPhones = msg.PatientIdentification.BusinessPhoneNumbers ?? new List<string>(),
-						SSN = msg.PatientIdentification.SSNNumber ?? "N/A",
-						//Email = msg.PatientIdentification.Email ?? "N/A",
-						MRNs = msg.PatientIdentification.PatientIdentifierList ?? new List<string>(),
-						PatientAccountNumber = msg.PatientIdentification.PatientAccountNumber ?? "N/A",
-						Age = (msg.PatientIdentification.DateTimeOfBirth.HasValue) ?
-						Math.Min(90, DateTime.Now.Year - msg.PatientIdentification.DateTimeOfBirth.Value.Year -
-						  (DateTime.Now < msg.PatientIdentification.DateTimeOfBirth.Value.AddYears(DateTime.Now.Year - msg.PatientIdentification.DateTimeOfBirth.Value.Year) ? 1 : 0)) :
-						(int?)null
-					};
-
-					redactedPatients.Add(patientInfo);
-				}
-			}
-
-			// Console log to output the stored redacted patient data
-			Console.WriteLine("Redacted Patient Data:");
-			foreach (var patient in redactedPatients)
-			{
-				Console.WriteLine($"Name(s): {string.Join(", ", ((dynamic)patient).Names)}");
-				Console.WriteLine($"Birthday: {((dynamic)patient).DateOfBirth}");
-				Console.WriteLine($"Age: {((dynamic)patient).Age}");
-				Console.WriteLine($"Address: {string.Join(", ", ((dynamic)patient).Addresses)}");
-				Console.WriteLine($"Home Phone(s): {string.Join(", ", ((dynamic)patient).HomePhones)}");
-				Console.WriteLine($"Business Phone(s): {string.Join(", ", ((dynamic)patient).BusinessPhones)}");
-				Console.WriteLine($"SSN: {((dynamic)patient).SSN}");
-				//Console.WriteLine($"Email: {((dynamic)patient).Email}");
-				Console.WriteLine($"MRN(s): {string.Join(", ", ((dynamic)patient).MRNs)}");
-				Console.WriteLine($"Account Number: {((dynamic)patient).PatientAccountNumber}");
-				Console.WriteLine("----------------------------");
-			}
-		}
+		}	
 	}
 }

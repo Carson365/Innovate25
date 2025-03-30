@@ -218,8 +218,8 @@ namespace BlazorApp.Data
 		public class OBX
 		{
 			public int? SetID { get; set; }
-			public string? ValueType { get; set; }
-			public required CE ObservationIdentifier { get; set; }
+			public string? ValueType { get; set; } ///
+			public required CE ObservationIdentifier { get; set; } ///
 			public string? ObservationSubID { get; set; }
 			public List<string>? ObservationValue { get; set; }
 			public string? Units { get; set; }

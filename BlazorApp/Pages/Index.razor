@@ -34,7 +34,7 @@
 					.OrderBy(record => record.MessageHeader.DateTimeOfMessage)
 					.Where(x => x.MessageHeader.MessageControlId == searchTerm || selectedSearchType != "Message Control ID")
 					.Where(y => y.PatientIdentification.PatientID == searchTerm || selectedSearchType != "MRN")
-					.Where(z => z.PatientIdentification.PatientNames/*.FamilyName*/.Contains(searchTerm) || selectedSearchType != "Last Name")
+					.Where(z => z.PatientIdentification.PatientName.FamilyName.Contains(searchTerm) || selectedSearchType != "Last Name")
 					.Take(visibleCount))
 			{
 				
