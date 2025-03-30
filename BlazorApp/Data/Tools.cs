@@ -60,7 +60,7 @@ namespace BlazorApp.Data
 		public class PID
 		{
 			public int? SetIdPID { get; set; }
-			public string? PatientID { get; set; }
+			public CX? PatientID { get; set; }
 			public required CX PatientIdentifierList { get; set; }
 			public CX? AlternatePatientIDs { get; set; }
 			public required XPN PatientName { get; set; }
@@ -251,7 +251,7 @@ namespace BlazorApp.Data
 			public string? ValueType { get; set; } ///
 			public required CE ObservationIdentifier { get; set; } ///
 			public string? ObservationSubID { get; set; }
-			public List<string>? ObservationValue { get; set; }
+			public HumanizedStringList ObservationValue { get; set; }
 			public string? Units { get; set; }
 			public string? ReferencesRange { get; set; }
 			public string? AbnormalFlags { get; set; }

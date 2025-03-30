@@ -1,6 +1,8 @@
 ﻿@using BlazorApp.Helpers
 @using Humanizer
 @using System.Collections
+@using Microsoft.AspNetCore.Components
+@using System.Text.RegularExpressions
 
 <div class="box hl7-message">
     @foreach (var segmentProperty in msg.GetType().GetProperties())
@@ -16,14 +18,14 @@
                 {
                     <div class="hl7-segment-item">
                         <h5>@segmentProperty.Name Item @index</h5>
-                        <p>@item.ToString()</p>
+                        <p>@(RenderWithLinks(item.ToString()))</p>
                     </div>
                     index++;
                 }
             }
             else
             {
-                <p>@segmentData.ToString()</p>
+                <p>@(RenderWithLinks(segmentData.ToString()))</p>
             }
         }
     }
@@ -31,4 +33,29 @@
 
 @code {
     [Parameter] public object msg { get; set; } = default!;
+
+    private MarkupString RenderWithLinks(string text)
+    {
+        if (text.Contains("Patient Identifier List: Id Number: "))
+        {
+            string pattern = @"Patient Identifier List: Id Number: (\S+)";
+
+            string replacement = @"Patient Identifier List: Id Number: " +
+            @"<a class=""nav-item"" href=""/search/$1"">" +
+                @"$1" +
+            @"</a>";
+            text = Regex.Replace(text, pattern, replacement);
+        }
+        if (text.Contains("Patient Account Number: "))
+        {
+            string pattern = @"Patient Account Number: (\S+)";
+
+            string replacement = @"Patient Account Number: " +
+            @"<a class=""nav-item"" href=""/search/$1"">" +
+                @"$1" +
+            @"</a>";
+            text = Regex.Replace(text, pattern, replacement);
+        }
+        return new MarkupString(text);
+    }
 }

@@ -499,5 +499,24 @@ namespace BlazorApp.Data
 				return this.ToHumanizedString(", ");
 			}
 		}
+
+		//public class HumanizedStringList : List<string>
+		//{
+		//	public override string ToString()
+		//	{
+		//		return string.Join(", ", this);
+		//	}
+		//}
+
+		public class HumanizedStringList : List<string>
+		{
+			public HumanizedStringList() { }
+
+			public HumanizedStringList(IEnumerable<string> collection) : base(collection) { }
+
+			public override string ToString() => string.Join(", ", this);
+		}
+
+
 	}
 }
