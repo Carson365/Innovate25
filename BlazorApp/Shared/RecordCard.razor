@@ -1,31 +1,60 @@
-﻿@using BlazorApp.Helpers
+﻿@using System.Reflection
+@using Microsoft.AspNetCore.Components
+@using BlazorApp.Helpers
 @using Humanizer
 @using System.Collections
-@using Microsoft.AspNetCore.Components
 @using System.Text.RegularExpressions
 
 <div class="box hl7-message">
-    @foreach (var segmentProperty in msg.GetType().GetProperties())
+    @{
+        var typeName = msg.GetType().Name;
+        var properties = msg.GetType().GetProperties();
+    }
+    @for (int i = 0; i < properties.Length; i++)
     {
-        var segmentData = segmentProperty.GetValue(msg);
-        if (segmentData != null)
+        var property = properties[i];
+        // Skip indexer properties.
+        if (property.GetIndexParameters().Length > 0)
         {
-            <h4>@segmentProperty.Name</h4>
-            @if (segmentData is IEnumerable enumerable && !(segmentData is string))
+            continue;
+        }
+        var propertyIndex = i + 1;
+        var value = property.GetValue(msg);
+        if (value != null)
+        {
+            if (value is string || value.GetType().IsPrimitive || value is DateTime)
             {
-                int index = 0;
-                foreach (var item in enumerable)
-                {
-                    <div class="hl7-segment-item">
-                        <h5>@segmentProperty.Name Item @index</h5>
-                        <p>@(RenderWithLinks(item.ToString()))</p>
-                    </div>
-                    index++;
-                }
+                <p title="@(GetHoverText(typeName, propertyIndex))">
+                    <strong>@property.Name:</strong> @value.ToString()
+                </p>
             }
             else
             {
-                <p>@(RenderWithLinks(segmentData.ToString()))</p>
+                <div>
+                    <h4 title="@(GetHoverText(typeName, propertyIndex))">
+                        @property.Name
+                    </h4>
+                    @{
+                        var subProperties = value.GetType().GetProperties();
+                    }
+                    @for (int j = 0; j < subProperties.Length; j++)
+                    {
+                        var subProp = subProperties[j];
+                        // Skip indexer properties for sub-properties.
+                        if (subProp.GetIndexParameters().Length > 0)
+                        {
+                            continue;
+                        }
+                        var subIndex = j + 1;
+                        var subValue = subProp.GetValue(value);
+                        if (subValue != null)
+                        {
+                            <p title="@(GetHoverText(property.PropertyType.Name, subIndex))">
+                                <strong>@subProp.Name:</strong> @(RenderValueWithLinks(subProp.Name, subValue.ToString()))
+                            </p>
+                        }
+                    }
+                </div>
             }
         }
     }
@@ -34,26 +63,32 @@
 @code {
     [Parameter] public object msg { get; set; } = default!;
 
-    private MarkupString RenderWithLinks(string text)
+    // Generates the hover text based on type name and index.
+    private string GetHoverText(string typeName, int index, int? childIndex = null)
     {
-        if (text.Contains("Patient Identifier List: Id Number: "))
-        {
-            string pattern = @"Patient Identifier List: Id Number: (\S+)";
+        if (typeName == "Message")
+            return ""; // or customize as needed
 
-            string replacement = @"Patient Identifier List: Id Number: " +
-            @"<a class=""nav-item"" href=""/search/$1"">" +
-                @"$1" +
-            @"</a>";
+        return childIndex.HasValue
+            ? $"{typeName}.{index}.{childIndex.Value}"
+            : $"{typeName}.{index}";
+    }
+
+    private MarkupString RenderValueWithLinks(string propName, string text)
+    {
+        if (propName == "PatientIdentifierList")
+        {
+            string pattern = @"Id Number: (\S+)";
+            string replacement = @"Id Number: <a class=""nav-item"" href=""/search/$1"">$1</a>";
             text = Regex.Replace(text, pattern, replacement);
         }
-        if (text.Contains("Patient Account Number: "))
-        {
-            string pattern = @"Patient Account Number: (\S+)";
 
-            string replacement = @"Patient Account Number: " +
-            @"<a class=""nav-item"" href=""/search/$1"">" +
-                @"$1" +
-            @"</a>";
+        // If the property name indicates that the value is an identifier,
+        // replace the entire value with a clickable link.
+        if (propName == "PatientAccountNumber")
+        {
+            string pattern = @"(\S+)";
+            string replacement = @"<a class=""nav-item"" href=""/search/$1"">$1</a>";
             text = Regex.Replace(text, pattern, replacement);
         }
         return new MarkupString(text);

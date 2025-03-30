@@ -54,7 +54,7 @@ namespace BlazorApp.Data
 			string hl7Content = await File.ReadAllTextAsync(filePath);
 			ParseHL7Messages(hl7Content);
 			recordsLoading = false;
-			DeIdentifier();
+			//DeIdentifier();
 			OnHL7MessagesLoaded?.Invoke();
 
 			Console.WriteLine($"Loaded {hl7Messages.Count} HL7 messages in {(DateTime.Now - time1).TotalMilliseconds} ms.");
