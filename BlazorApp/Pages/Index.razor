@@ -88,12 +88,15 @@
 @code {
     private int visibleCount;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool first)
     {
-        // Load employees and HL7 records in the background.
-        _ = EmployeeService.LoadEmployeesAsync();
-        _ = EmployeeService.LoadHL7RecordsAsync();
-        EmployeeService.OnHL7MessagesLoaded += StateHasChanged; // Update UI when messages load
+        if (first)
+        {
+            // Load employees and HL7 records in the background.
+            // _ = EmployeeService.LoadEmployeesAsync();
+            _ = EmployeeService.LoadHL7RecordsAsync();
+            EmployeeService.OnHL7MessagesLoaded += StateHasChanged; // Update UI when messages load
+        }
 
     }
 

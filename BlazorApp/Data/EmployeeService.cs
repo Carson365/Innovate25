@@ -1,12 +1,7 @@
 ﻿using FileHelpers;
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace BlazorApp.Data
 {
@@ -41,6 +36,7 @@ namespace BlazorApp.Data
 
 		public async Task LoadHL7RecordsAsync()
 		{
+			var time1 = DateTime.Now;
 			string filePath = Path.Combine("Data", "source_hl7_messages_v2.hl7");
 			if (!File.Exists(filePath))
 			{
@@ -52,34 +48,34 @@ namespace BlazorApp.Data
 			ParseHL7Messages(hl7Content);
 			recordsLoading = false;
 			OnHL7MessagesLoaded?.Invoke();
+
+			Console.WriteLine($"Loaded {hl7Messages.Count} HL7 messages in {(DateTime.Now - time1).TotalMilliseconds} ms.");
 		}
 
-		/// <summary>
-		/// Splits the HL7 content into individual messages and converts each into a Tools.Message object.
-		/// </summary>
 		private void ParseHL7Messages(string hl7Content)
 		{
+			int v = 0;
+
 			var messages = Regex.Split(hl7Content, @"(?=MSH\|)");
 
 			foreach (var message in messages.Where(m => !string.IsNullOrWhiteSpace(m)))
 			{
+				v++;
 				string processedMessage = PreprocessMessage(message);
 				try
 				{
 					var myMessage = ConvertHL7ToMessage(processedMessage);
 					hl7Messages.Add(myMessage);
-					Console.WriteLine("Created custom Message object from HL7 message.");
+					//Console.WriteLine("Created custom Message object from HL7 message.");
 				}
 				catch (Exception ex)
 				{
 					Console.WriteLine("Error processing HL7 message: " + ex.Message);
 				}
 			}
+			Console.WriteLine($"Parsed {v} HL7 messages.");
 		}
 
-		/// <summary>
-		/// Converts a raw HL7 message string into a Tools.Message instance using reflection.
-		/// </summary>
 		private Tools.Message ConvertHL7ToMessage(string message)
 		{
 			var msg = new Tools.Message();
@@ -110,9 +106,6 @@ namespace BlazorApp.Data
 			return msg;
 		}
 
-		/// <summary>
-		/// Maps an HL7 segment (fields array) to an instance of the given target type.
-		/// </summary>
 		private object MapSegmentToObject(string[] fields, Type targetType)
 		{
 			object segmentObj = Activator.CreateInstance(targetType)
@@ -154,9 +147,6 @@ namespace BlazorApp.Data
 			return segmentObj;
 		}
 
-		/// <summary>
-		/// Custom HL7 date parser that attempts to parse dates in yyyyMMdd and yyyyMMddHHmmss formats.
-		/// </summary>
 		private DateTime? ParseHL7Date(string hl7Date)
 		{
 			if (string.IsNullOrWhiteSpace(hl7Date))
@@ -193,9 +183,6 @@ namespace BlazorApp.Data
 		}
 
 
-		/// <summary>
-		/// Pre-processes an HL7 message to correct common issues, such as improper encoding characters.
-		/// </summary>
 		private string PreprocessMessage(string message)
 		{
 			// Define allowed OBX-2 values.
