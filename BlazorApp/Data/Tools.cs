@@ -51,14 +51,14 @@ namespace BlazorApp.Data
 			public int? SetIdPID { get; set; }
 			public string? PatientID { get; set; }
 			public required CX PatientIdentifierList { get; set; }
-			public CX AlternatePatientIDs { get; set; }
-			public required PatientName PatientName { get; set; }
-			public XPN MothersMaidenNames { get; set; }
+			public CX? AlternatePatientIDs { get; set; }
+			public required XPN PatientName { get; set; }
+			public XPN? MothersMaidenName { get; set; }
 			public DateTime? DateTimeOfBirth { get; set; }
 			public string? AdministrativeSex { get; set; }
-			public XPN PatientAliases { get; set; }
-			public CE? Races { get; set; }
-			public XAD? PatientAddresses { get; set; }
+			public XPN? PatientAliases { get; set; }
+			public CE? Race { get; set; }
+			public XAD? PatientAddress { get; set; }
 			public string? CountyCode { get; set; }
 			public XTN? HomePhoneNumbers { get; set; }
 			public XTN? BusinessPhoneNumbers { get; set; }
@@ -74,12 +74,12 @@ namespace BlazorApp.Data
 			public string? MultipleBirthIndicator { get; set; }
 			public int? BirthOrder { get; set; }
 			public CE? Citizenships { get; set; }
-			public string? VeteransMilitaryStatus { get; set; }
-			public string? Nationality { get; set; }
+			public CE? VeteransMilitaryStatus { get; set; }
+			public CE? Nationality { get; set; }
 			public DateTime? PatientDeathDateTime { get; set; }
 			public string? PatientDeathIndicator { get; set; }
 			public string? IdentityUnknownIndicator { get; set; }
-			public string? IdentityReliabilityCodes { get; set; }
+			public string? IdentityReliabilityCode { get; set; }
 			public DateTime? LastUpdateDateTime { get; set; }
 			public string? LastUpdateFacility { get; set; }
 			public string? SpeciesCode { get; set; }
@@ -95,28 +95,28 @@ namespace BlazorApp.Data
 		{
 			public int? SetIdPV1 { get; set; }
 			public required string PatientClass { get; set; }
-			public List<string?> AssignedPatientLocation { get; set; }
+			public PL? AssignedPatientLocation { get; set; }
 			public string? AdmissionType { get; set; }
 			public string? PreadmitNumber { get; set; }
-			public List<string>? PriorPatientLocation { get; set; }
-			public List<string>? AttendingDoctors { get; set; }
-			public List<string>? ReferringDoctors { get; set; }
-			public List<string>? ConsultingDoctors { get; set; }
+			public PL? PriorPatientLocation { get; set; }
+			public XCN? AttendingDoctors { get; set; }
+			public XCN? ReferringDoctors { get; set; }
+			public XCN? ConsultingDoctors { get; set; }
 			public string? HospitalService { get; set; }
 			public string? TemporaryLocation { get; set; }
 			public string? PreadmitTestIndicator { get; set; }
 			public string? ReadmissionIndicator { get; set; }
 			public string? AdmitSource { get; set; }
-			public List<string>? AmbulatoryStatuses { get; set; }
+			public string? AmbulatoryStatus { get; set; }
 			public string? VIPIndicator { get; set; }
-			public List<string>? AdmittingDoctors { get; set; }
+			public XCN? AdmittingDoctor { get; set; }
 			public string? PatientType { get; set; }
 			public string? VisitNumber { get; set; }
-			public List<string>? FinancialClasses { get; set; }
+			public FC? FinancialClass { get; set; }
 			public string? ChargePriceIndicator { get; set; }
 			public string? CourtesyCode { get; set; }
 			public string? CreditRating { get; set; }
-			public List<string>? ContractCodes { get; set; }
+			public string? ContractCode { get; set; }
 			public DateTime? ContractEffectiveDate { get; set; }
 			public decimal? ContractAmount { get; set; }
 			public int? ContractPeriod { get; set; }
@@ -131,20 +131,20 @@ namespace BlazorApp.Data
 			public string? DischargeDisposition { get; set; }
 			public string? DischargedToLocation { get; set; }
 			public string? DietType { get; set; }
-			public List<string>? ServicingFacility { get; set; }
+			public string? ServicingFacility { get; set; }
 			public string? BedStatus { get; set; }
 			public string? AccountStatus { get; set; }
 			public string? PendingLocation { get; set; }
 			public string? PriorTemporaryLocation { get; set; }
 			public DateTime? AdmitDateTime { get; set; }
-			public List<DateTime>? DischargeDateTimes { get; set; }
+			public TS? DischargeDateTime { get; set; }
 			public decimal? CurrentPatientBalance { get; set; }
 			public decimal? TotalCharges { get; set; }
 			public decimal? TotalAdjustments { get; set; }
 			public decimal? TotalPayments { get; set; }
 			public string? AlternateVisitID { get; set; }
 			public string? VisitIndicator { get; set; }
-			public List<string>? OtherHealthcareProviders { get; set; }
+			public XCN? OtherHealthcareProviders { get; set; }
 		}
 
 
@@ -160,14 +160,14 @@ namespace BlazorApp.Data
 			public DateTime? ObservationDateTime { get; set; }
 			public DateTime? ObservationEndDateTime { get; set; }
 			public string? CollectionVolume { get; set; }
-			public List<string>? CollectorIdentifiers { get; set; }
+			public XCN? CollectorIdentifier { get; set; }
 			public string? SpecimenActionCode { get; set; }
 			public string? DangerCode { get; set; }
 			public string? RelevantClinicalInformation { get; set; }
 			public DateTime? SpecimenReceivedDateTime { get; set; }
 			public string? SpecimenSource { get; set; }
-			public List<string>? OrderingProviders { get; set; }
-			public List<string>? OrderCallbackPhoneNumbers { get; set; }
+			public XCN? OrderingProviders { get; set; }
+			public XTN? OrderCallbackPhoneNumbers { get; set; }
 			public string? PlacerField1 { get; set; }
 			public string? PlacerField2 { get; set; }
 			public string? FillerField1 { get; set; }
@@ -177,28 +177,28 @@ namespace BlazorApp.Data
 			public string? DiagnosticServSectID { get; set; }
 			public string? ResultStatus { get; set; }
 			public string? ParentResult { get; set; }
-			public List<string>? QuantityTiming { get; set; }
-			public List<string>? ResultCopiesTo { get; set; }
+			public TQ? QuantityTiming { get; set; }
+			public XCN? ResultCopiesTo { get; set; }
 			public string? Parent { get; set; }
 			public string? TransportationMode { get; set; }
-			public List<string>? ReasonForStudy { get; set; }
-			public string? PrincipalResultInterpreter { get; set; }
-			public List<string>? AssistantResultInterpreters { get; set; }
-			public List<string>? Technicians { get; set; }
-			public List<string>? Transcriptionists { get; set; }
+			public CE? ReasonForStudy { get; set; }
+			public NDL? PrincipalResultInterpreter { get; set; }
+			public NDL? AssistantResultInterpreters { get; set; }
+			public NDL? Technicians { get; set; }
+			public NDL? Transcriptionists { get; set; }
 			public DateTime? ScheduledDateTime { get; set; }
 			public int? NumberOfSampleContainers { get; set; }
-			public List<string>? TransportLogisticsOfCollectedSample { get; set; }
-			public List<string>? CollectorsComment { get; set; }
+			public CE? TransportLogisticsOfCollectedSample { get; set; }
+			public CE? CollectorsComment { get; set; }
 			public string? TransportArrangementResponsibility { get; set; }
 			public string? TransportArranged { get; set; }
 			public string? EscortRequired { get; set; }
-			public List<string>? PlannedPatientTransportComments { get; set; }
+			public CE? PlannedPatientTransportComments { get; set; }
 			public string? ProcedureCode { get; set; }
-			public List<string>? ProcedureCodeModifiers { get; set; }
-			public List<string>? PlacerSupplementalServiceInformation { get; set; }
-			public List<string>? FillerSupplementalServiceInformation { get; set; }
-			public string? MedicallyNecessaryDuplicateProcedureReason { get; set; }
+			public CE? ProcedureCodeModifiers { get; set; }
+			public CE? PlacerSupplementalServiceInformation { get; set; }
+			public CE? FillerSupplementalServiceInformation { get; set; }
+			public CWE? MedicallyNecessaryDuplicateProcedureReason { get; set; }
 			public string? ResultHandling { get; set; }
 		}
 
@@ -219,22 +219,22 @@ namespace BlazorApp.Data
 		{
 			public int? SetID { get; set; }
 			public string? ValueType { get; set; }
-			public List<string>? ObservationIdentifier { get; set; }
+			public required CE ObservationIdentifier { get; set; }
 			public string? ObservationSubID { get; set; }
 			public List<string>? ObservationValue { get; set; }
 			public string? Units { get; set; }
 			public string? ReferencesRange { get; set; }
-			public List<string>? AbnormalFlags { get; set; }
+			public string? AbnormalFlags { get; set; }
 			public decimal? Probability { get; set; }
-			public List<string>? NatureOfAbnormalTest { get; set; }
-			public string? ObservationResultStatus { get; set; }
+			public string? NatureOfAbnormalTest { get; set; }
+			public required string ObservationResultStatus { get; set; }
 			public DateTime? EffectiveDateOfReferenceRange { get; set; }
 			public string? UserDefinedAccessChecks { get; set; }
 			public DateTime? DateTimeOfObservation { get; set; }
 			public string? ProducersID { get; set; }
-			public List<string>? ResponsibleObserver { get; set; }
-			public List<string>? ObservationMethod { get; set; }
-			public List<string>? EquipmentInstanceIdentifier { get; set; }
+			public XCN? ResponsibleObserver { get; set; }
+			public CE? ObservationMethod { get; set; }
+			public EI? EquipmentInstanceIdentifier { get; set; }
 			public DateTime? DateTimeOfAnalysis { get; set; }
 		}
 

@@ -2,7 +2,7 @@
 {
 	public class Classes
 	{
-		public class PatientName
+		public class XPN
 		{
 			public string? FamilyName { get; set; }
 			public string? GivenName { get; set; }

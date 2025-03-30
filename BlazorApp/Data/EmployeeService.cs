@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Collections;
+using static BlazorApp.Data.Classes;
 
 namespace BlazorApp.Data
 {
@@ -294,15 +295,15 @@ namespace BlazorApp.Data
 		{
 			List<object> redactedPatients = new();
 
-			foreach (BlazorApp.Data.Tools.Message msg in hl7Messages.Take(10))
+			foreach (Tools.Message msg in hl7Messages.Take(10))
 			{
 				if (msg.PatientIdentification != null)
 				{
 					var patientInfo = new
 					{
-						Names = msg.PatientIdentification.PatientNames ?? new List<string>(),
+						Names = msg.PatientIdentification.PatientName ?? new XTN(),
 						DateOfBirth = msg.PatientIdentification.DateTimeOfBirth?.ToShortDateString() ?? "Unknown",
-						Addresses = msg.PatientIdentification.PatientAddresses ?? new List<string>(),
+						Addresses = msg.PatientIdentification.PatientAddress ?? new List<string>(),
 						HomePhones = msg.PatientIdentification.HomePhoneNumbers ?? new List<string>(),
 						BusinessPhones = msg.PatientIdentification.BusinessPhoneNumbers ?? new List<string>(),
 						SSN = msg.PatientIdentification.SSNNumber ?? "N/A",
