@@ -16,14 +16,14 @@
                 {
                     <div class="hl7-segment-item">
                         <h5>@segmentProperty.Name Item @index</h5>
-                        <p>@item.ToHumanizedString()</p>
+                        <p>@item.ToString()</p>
                     </div>
                     index++;
                 }
             }
             else
             {
-                <p>@segmentData.ToHumanizedString()</p>
+                <p>@segmentData.ToString()</p>
             }
         }
     }

@@ -1,4 +1,5 @@
-﻿using static BlazorApp.Data.Classes;
+﻿using BlazorApp.Helpers;
+using static BlazorApp.Data.Classes;
 
 namespace BlazorApp.Data
 {
@@ -29,6 +30,11 @@ namespace BlazorApp.Data
 			public string? PrincipalLanguageOfMessage { get; set; }
 			public string? AlternateCharacterSetHandlingScheme { get; set; }
 			public EI? MessageProfileIdentifiers { get; set; }
+
+			public override string ToString()
+			{
+				return this.ToHumanizedString(Environment.NewLine);
+			}
 		}
 
 
@@ -42,6 +48,11 @@ namespace BlazorApp.Data
 			public XCN? OperatorIds { get; set; }
 			public DateTime? EventOccurred { get; set; }
 			public string? EventFacility { get; set; }
+
+			public override string ToString()
+			{
+				return this.ToHumanizedString(Environment.NewLine);
+			}
 		}
 
 
@@ -87,6 +98,11 @@ namespace BlazorApp.Data
 			public string? Strain { get; set; }
 			public string? ProductionClassCode { get; set; }
 			public CWE? TribalCitizenships { get; set; }
+
+			public override string ToString()
+			{
+				return this.ToHumanizedString(Environment.NewLine);
+			}
 		}
 
 
@@ -145,6 +161,11 @@ namespace BlazorApp.Data
 			public string? AlternateVisitID { get; set; }
 			public string? VisitIndicator { get; set; }
 			public XCN? OtherHealthcareProviders { get; set; }
+
+			public override string ToString()
+			{
+				return this.ToHumanizedString(Environment.NewLine);
+			}
 		}
 
 
@@ -200,6 +221,11 @@ namespace BlazorApp.Data
 			public CE? FillerSupplementalServiceInformation { get; set; }
 			public CWE? MedicallyNecessaryDuplicateProcedureReason { get; set; }
 			public string? ResultHandling { get; set; }
+
+			public override string ToString()
+			{
+				return this.ToHumanizedString(Environment.NewLine);
+			}
 		}
 
 
@@ -212,7 +238,11 @@ namespace BlazorApp.Data
 			public DateTime? OrderDateTime { get; set; }
 			public string? OrderingProvider { get; set; }
 			public string? EnteringOrganization { get; set; }
-			// Include other fields as needed.
+
+			public override string ToString()
+			{
+				return this.ToHumanizedString(Environment.NewLine);
+			}
 		}
 
 		public class OBX
@@ -236,6 +266,11 @@ namespace BlazorApp.Data
 			public CE? ObservationMethod { get; set; }
 			public EI? EquipmentInstanceIdentifier { get; set; }
 			public DateTime? DateTimeOfAnalysis { get; set; }
+
+			public override string ToString()
+			{
+				return this.ToHumanizedString(Environment.NewLine);
+			}
 		}
 
 		public class Message
@@ -247,6 +282,11 @@ namespace BlazorApp.Data
 			public OBR? ObservationRequest { get; set; }
 			public ORC? CommonOrder { get; set; }
 			public List<OBX>? ObservationResult { get; set; }
+
+			public override string ToString()
+			{
+				return this.ToHumanizedString(Environment.NewLine);
+			}
 		}
 
 

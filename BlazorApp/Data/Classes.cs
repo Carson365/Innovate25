@@ -1,4 +1,6 @@
-﻿namespace BlazorApp.Data
+﻿using BlazorApp.Helpers;
+
+namespace BlazorApp.Data
 {
 	public class Classes
 	{
@@ -39,6 +41,10 @@
 					ProfessionalSuffix = fields.ElementAtOrDefault(13)
 				};
 			}
+			public override string ToString()
+			{
+				return this.ToHumanizedString(", ");
+			}
 		}
 
 		public class MSG
@@ -55,6 +61,10 @@
 					TriggerEvent = fields.ElementAtOrDefault(1) ?? string.Empty,
 					MessageStructure = fields.ElementAtOrDefault(2) ?? string.Empty
 				};
+			}
+			public override string ToString()
+			{
+				return this.ToHumanizedString(", ");
 			}
 		}
 
@@ -74,6 +84,10 @@
 					UniversalId = fields.ElementAtOrDefault(2),
 					UniversalIdType = fields.ElementAtOrDefault(3)
 				};
+			}
+			public override string ToString()
+			{
+				return this.ToHumanizedString(", ");
 			}
 		}
 
@@ -132,6 +146,10 @@
 					AssigningAgencyOrDepartment = fields.ElementAtOrDefault(22)
 				};
 			}
+			public override string ToString()
+			{
+				return this.ToHumanizedString(", ");
+			}
 		}
 
 		public class CX
@@ -163,6 +181,10 @@
 					AssigningAgencyOrDepartment = fields.ElementAtOrDefault(9)
 				};
 			}
+			public override string ToString()
+			{
+				return this.ToHumanizedString(", ");
+			}
 		}
 		public class CE
 		{
@@ -184,6 +206,10 @@
 					AlternateText = fields.ElementAtOrDefault(4),
 					NameOfAlternateCodingSystem = fields.ElementAtOrDefault(5)
 				};
+			}
+			public override string ToString()
+			{
+				return this.ToHumanizedString(", ");
 			}
 		}
 
@@ -225,6 +251,10 @@
 					ExpirationDate = DateTime.TryParse(fields.ElementAtOrDefault(13), out DateTime expirationDate) ? expirationDate : null
 				};
 			}
+			public override string ToString()
+			{
+				return this.ToHumanizedString(", ");
+			}
 		}
 		public class XTN
 		{
@@ -259,6 +289,10 @@
 					UnformattedTelephoneNumber = fields.ElementAtOrDefault(11)
 				};
 			}
+			public override string ToString()
+			{
+				return this.ToHumanizedString(", ");
+			}
 		}
 		public class CWE
 		{
@@ -286,6 +320,10 @@
 					AlternateCodingSystemVersionId = fields.ElementAtOrDefault(7),
 					OriginalText = fields.ElementAtOrDefault(8)
 				};
+			}
+			public override string ToString()
+			{
+				return this.ToHumanizedString(", ");
 			}
 		}
 
@@ -320,6 +358,10 @@
 					Building = fields.ElementAtOrDefault(9),
 					Floor = fields.ElementAtOrDefault(10)
 				};
+			}
+			public override string ToString()
+			{
+				return this.ToHumanizedString(", ");
 			}
 		}
 
@@ -356,6 +398,10 @@
 					TotalOccurrences = int.TryParse(fields.ElementAtOrDefault(11), out int totalOccurrences) ? totalOccurrences : null
 				};
 			}
+			public override string ToString()
+			{
+				return this.ToHumanizedString(", ");
+			}
 		}
 
 
@@ -373,6 +419,10 @@
 					DegreeOfPrecision = fields.ElementAtOrDefault(1)
 				};
 			}
+			public override string ToString()
+			{
+				return this.ToHumanizedString(", ");
+			}
 		}
 
 		public class FC
@@ -387,6 +437,10 @@
 					FinancialClassCode = fields.ElementAtOrDefault(0) ?? string.Empty,
 					EffectiveDate = DateTime.TryParse(fields.ElementAtOrDefault(1), out DateTime totalOccurrences) ? totalOccurrences : null
 				};
+			}
+			public override string ToString()
+			{
+				return this.ToHumanizedString(", ");
 			}
 		}
 
@@ -421,6 +475,10 @@
 					ComprehensiveLocationIdentifier = fields.ElementAtOrDefault(9),
 					AssigningAuthorityForLocation = fields.ElementAtOrDefault(10)
 				};
+			}
+			public override string ToString()
+			{
+				return this.ToHumanizedString(", ");
 			}
 		}
 	}

@@ -8,50 +8,33 @@ namespace BlazorApp.Helpers
 {
 	public static class HumanizerExtensions
 	{
-		public static string ToHumanizedString(this object obj, int level = 0)
+		public static string ToHumanizedString(this object obj, string separator)
 		{
 			if (obj == null)
 				return string.Empty;
 
-			// If the object is an enumerable (but not a string), process each item recursively.
+			// If the object is an enumerable (but not a string), process each item.
 			if (obj is IEnumerable enumerable && !(obj is string))
 			{
-				var items = enumerable.Cast<object>()
-									  .Select(item => item.ToHumanizedString(level + 1));
-				// At level 1, use line breaks; otherwise commas.
-				var separator = level == 0 ? Environment.NewLine : ", ";
-				//var separator = Environment.NewLine;
+				var items = enumerable.Cast<object>().Select(item => item?.ToString() ?? "null");
 				return string.Join(separator, items);
 			}
 
-			// If the object is a primitive type or string, just return its string representation.
+			// If the object is a primitive type, string, DateTime, or decimal, return its string representation.
 			if (obj.GetType().IsPrimitive || obj is string || obj is DateTime || obj is decimal)
 				return obj.ToString()!;
 
-			// Process the object's properties.
+			// Process the object's public instance properties.
 			var properties = obj.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
-
 			var humanizedProperties = properties
 				.Select(p =>
 				{
 					var value = p.GetValue(obj);
-					if (value == null) return null;
-
-					// For DateTime, use round-trip format.
-					string formattedValue = value is DateTime dt
-						? dt.ToString("o")
-						: (value.GetType().IsPrimitive || value is string
-							? value.ToString()
-							: value.ToHumanizedString(level + 1));
-
-					return $"{p.Name.Humanize(LetterCasing.Title)}: {formattedValue}";
+					return value != null ? $"{p.Name.Humanize(LetterCasing.Title)}: {value}" : null;
 				})
 				.Where(x => !string.IsNullOrWhiteSpace(x));
 
-			// Use line breaks at recursion level 1, commas otherwise.
-			var separatorForProperties = level == 0 ? Environment.NewLine : ", ";
-			//var separatorForProperties = Environment.NewLine;
-			return string.Join(separatorForProperties, humanizedProperties);
+			return string.Join(separator, humanizedProperties);
 		}
 	}
 }
