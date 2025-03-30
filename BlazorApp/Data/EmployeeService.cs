@@ -198,7 +198,7 @@ namespace BlazorApp.Data
 
 
 
-		private DateTime? ParseHL7Date(string hl7Date)
+		public static DateTime? ParseHL7Date(string hl7Date)
 		{
 			if (string.IsNullOrWhiteSpace(hl7Date))
 				return null;
@@ -206,21 +206,21 @@ namespace BlazorApp.Data
 			// Define a comprehensive list of possible date formats.
 			string[] formats = new[]
 			{
-		"yyyyMMdd",
-		"yyyyMMddHHmmss",
-		"yyyyMMddHHmm",
-		"yyyy-MM-dd",
-		"yyyy-MM-ddTHH:mm:ss",
-		"MM/dd/yyyy",
-		"MM/dd/yyyy HH:mm:ss",
-		"dd-MMM-yyyy",
-		"dd/MM/yyyy",
-		"dd.MM.yyyy",
-		"M/d/yyyy",
-		"M/d/yyyy h:mm:ss tt",
-		"yyyyMMddHHmmzzz"
-        // Add more formats as needed.
-    };
+				"yyyyMMdd",
+				"yyyyMMddHHmmss",
+				"yyyyMMddHHmm",
+				"yyyy-MM-dd",
+				"yyyy-MM-ddTHH:mm:ss",
+				"MM/dd/yyyy",
+				"MM/dd/yyyy HH:mm:ss",
+				"dd-MMM-yyyy",
+				"dd/MM/yyyy",
+				"dd.MM.yyyy",
+				"M/d/yyyy",
+				"M/d/yyyy h:mm:ss tt",
+				"yyyyMMddHHmmzzz"
+			    // Add more formats as needed.
+			};
 
 			// First, try parsing with the defined formats.
 			if (DateTime.TryParseExact(hl7Date, formats, CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime parsedDate))

@@ -1,4 +1,6 @@
 ﻿using BlazorApp.Helpers;
+using Humanizer;
+using System.Text;
 
 namespace BlazorApp.Data
 {
@@ -36,14 +38,21 @@ namespace BlazorApp.Data
 					NameContext = fields.ElementAtOrDefault(8),
 					NameValidityRange = fields.ElementAtOrDefault(9),
 					NameAssemblyOrder = fields.ElementAtOrDefault(10),
-					EffectiveDate = DateTime.TryParse(fields.ElementAtOrDefault(11), out DateTime effectiveDate) ? effectiveDate : null,
-					ExpirationDate = DateTime.TryParse(fields.ElementAtOrDefault(12), out DateTime expirationDate) ? expirationDate : null,
+					EffectiveDate = EmployeeService.ParseHL7Date(fields.ElementAtOrDefault(11)),
+					ExpirationDate = EmployeeService.ParseHL7Date(fields.ElementAtOrDefault(12)),
 					ProfessionalSuffix = fields.ElementAtOrDefault(13)
 				};
 			}
 			public override string ToString()
 			{
-				return this.ToHumanizedString(", ");
+				var sb = new StringBuilder();
+				if (!string.IsNullOrEmpty(Prefix)) sb.Append(Prefix).Append(" ");
+				if (!string.IsNullOrEmpty(GivenName)) sb.Append(GivenName).Append(" ");
+				if (!string.IsNullOrEmpty(SecondAndFurtherGivenNames)) sb.Append(SecondAndFurtherGivenNames).Append(" ");
+				if (!string.IsNullOrEmpty(FamilyName)) sb.Append(FamilyName).Append(" ");
+				if (!string.IsNullOrEmpty(Suffix)) sb.Append(", ").Append(Suffix);
+				if (!string.IsNullOrEmpty(ProfessionalSuffix)) sb.Append(", ").Append(ProfessionalSuffix);
+				return sb.ToString().Trim().Humanize(LetterCasing.Title);
 			}
 		}
 
@@ -139,8 +148,8 @@ namespace BlazorApp.Data
 					NameContext = fields.ElementAtOrDefault(15),
 					NameValidityRange = fields.ElementAtOrDefault(16),
 					NameAssemblyOrder = fields.ElementAtOrDefault(17),
-					EffectiveDate = DateTime.TryParse(fields.ElementAtOrDefault(18), out DateTime effectiveDate) ? effectiveDate : null,
-					ExpirationDate = DateTime.TryParse(fields.ElementAtOrDefault(19), out DateTime expirationDate) ? expirationDate : null,
+					EffectiveDate = EmployeeService.ParseHL7Date(fields.ElementAtOrDefault(18)),
+					ExpirationDate = EmployeeService.ParseHL7Date(fields.ElementAtOrDefault(19)),
 					ProfessionalSuffix = fields.ElementAtOrDefault(20),
 					AssigningJurisdiction = fields.ElementAtOrDefault(21),
 					AssigningAgencyOrDepartment = fields.ElementAtOrDefault(22)
@@ -148,7 +157,16 @@ namespace BlazorApp.Data
 			}
 			public override string ToString()
 			{
-				return this.ToHumanizedString(", ");
+				//return this.ToHumanizedString(", ");
+
+				var sb = new StringBuilder();
+				if (!string.IsNullOrEmpty(Prefix)) sb.Append(Prefix).Append(" ");
+				if (!string.IsNullOrEmpty(GivenName)) sb.Append(GivenName).Append(" ");
+				if (!string.IsNullOrEmpty(SecondAndFurtherGivenNamesOrInitialsThereof)) sb.Append(SecondAndFurtherGivenNamesOrInitialsThereof).Append(" ");
+				if (!string.IsNullOrEmpty(FamilyName)) sb.Append(FamilyName).Append(" ");
+				if (!string.IsNullOrEmpty(Suffix)) sb.Append(", ").Append(Suffix);
+				if (!string.IsNullOrEmpty(ProfessionalSuffix)) sb.Append(", ").Append(ProfessionalSuffix);
+				return sb.ToString().Trim().Humanize(LetterCasing.Title);
 			}
 		}
 
@@ -175,8 +193,8 @@ namespace BlazorApp.Data
 					AssigningAuthority = fields.ElementAtOrDefault(3),
 					IdentifierTypeCode = fields.ElementAtOrDefault(4),
 					AssigningFacility = fields.ElementAtOrDefault(5),
-					EffectiveDate = DateTime.TryParse(fields.ElementAtOrDefault(6), out DateTime effectiveDate) ? effectiveDate : null,
-					ExpirationDate = DateTime.TryParse(fields.ElementAtOrDefault(7), out DateTime expirationDate) ? expirationDate : null,
+					EffectiveDate = EmployeeService.ParseHL7Date(fields.ElementAtOrDefault(6)),
+					ExpirationDate = EmployeeService.ParseHL7Date(fields.ElementAtOrDefault(7)),
 					AssigningJurisdiction = fields.ElementAtOrDefault(8),
 					AssigningAgencyOrDepartment = fields.ElementAtOrDefault(9)
 				};
@@ -247,8 +265,8 @@ namespace BlazorApp.Data
 					CensusTract = fields.ElementAtOrDefault(9),
 					AddressRepresentationCode = fields.ElementAtOrDefault(10),
 					AddressValidityRange = fields.ElementAtOrDefault(11),
-					EffectiveDate = DateTime.TryParse(fields.ElementAtOrDefault(12), out DateTime effectiveDate) ? effectiveDate : null,
-					ExpirationDate = DateTime.TryParse(fields.ElementAtOrDefault(13), out DateTime expirationDate) ? expirationDate : null
+					EffectiveDate = EmployeeService.ParseHL7Date(fields.ElementAtOrDefault(12)),
+					ExpirationDate = EmployeeService.ParseHL7Date(fields.ElementAtOrDefault(13)),
 				};
 			}
 			public override string ToString()
@@ -347,8 +365,8 @@ namespace BlazorApp.Data
 				return new NDL
 				{
 					Name = fields.ElementAtOrDefault(0),
-					StartDateTime = DateTime.TryParse(fields.ElementAtOrDefault(1), out DateTime startDateTime) ? startDateTime : null,
-					EndDateTime = DateTime.TryParse(fields.ElementAtOrDefault(2), out DateTime endDateTime) ? endDateTime : null,
+					StartDateTime = EmployeeService.ParseHL7Date(fields.ElementAtOrDefault(1)),
+					EndDateTime = EmployeeService.ParseHL7Date(fields.ElementAtOrDefault(2)),
 					PointOfCare = fields.ElementAtOrDefault(3),
 					Room = fields.ElementAtOrDefault(4),
 					Bed = fields.ElementAtOrDefault(5),
@@ -387,8 +405,8 @@ namespace BlazorApp.Data
 					Quantity = fields.ElementAtOrDefault(0),
 					Interval = fields.ElementAtOrDefault(1),
 					Duration = fields.ElementAtOrDefault(2),
-					StartDateTime = DateTime.TryParse(fields.ElementAtOrDefault(3), out DateTime startDateTime) ? startDateTime : null,
-					EndDateTime = DateTime.TryParse(fields.ElementAtOrDefault(4), out DateTime endDateTime) ? endDateTime : null,
+					StartDateTime = EmployeeService.ParseHL7Date(fields.ElementAtOrDefault(3)),
+					EndDateTime = EmployeeService.ParseHL7Date(fields.ElementAtOrDefault(4)),
 					Priority = fields.ElementAtOrDefault(5),
 					Condition = fields.ElementAtOrDefault(6),
 					Text = fields.ElementAtOrDefault(7),
@@ -408,14 +426,14 @@ namespace BlazorApp.Data
 
 		public class TS
 		{
-			public DateTime Time { get; set; } // TS.1 - Required (DTM: Date/Time)
+			public required DateTime Time { get; set; } // TS.1 - Required (DTM: Date/Time)
 			public string? DegreeOfPrecision { get; set; } // TS.2 - Business Rule Dependent (Table 0529)
 
 			public static TS FromDelimitedFields(List<string> fields)
 			{
 				return new TS
 				{
-					Time = DateTime.TryParse(fields.ElementAtOrDefault(0), out DateTime time) ? time : default,
+					Time = (DateTime)EmployeeService.ParseHL7Date(fields.ElementAtOrDefault(0)),
 					DegreeOfPrecision = fields.ElementAtOrDefault(1)
 				};
 			}
@@ -435,7 +453,7 @@ namespace BlazorApp.Data
 				return new FC
 				{
 					FinancialClassCode = fields.ElementAtOrDefault(0) ?? string.Empty,
-					EffectiveDate = DateTime.TryParse(fields.ElementAtOrDefault(1), out DateTime totalOccurrences) ? totalOccurrences : null
+					EffectiveDate = EmployeeService.ParseHL7Date(fields.ElementAtOrDefault(1)),
 				};
 			}
 			public override string ToString()

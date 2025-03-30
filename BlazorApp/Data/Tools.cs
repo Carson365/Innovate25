@@ -288,7 +288,5 @@ namespace BlazorApp.Data
 				return this.ToHumanizedString(Environment.NewLine);
 			}
 		}
-
-
 	}
 }
