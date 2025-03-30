@@ -54,8 +54,8 @@ namespace BlazorApp.Data
 			string hl7Content = await File.ReadAllTextAsync(filePath);
 			ParseHL7Messages(hl7Content);
 			recordsLoading = false;
+			DeIdentifier();
 			OnHL7MessagesLoaded?.Invoke();
-			PrintSensitiveDataDetails();
 
 			Console.WriteLine($"Loaded {hl7Messages.Count} HL7 messages in {(DateTime.Now - time1).TotalMilliseconds} ms.");
 		}
@@ -326,7 +326,7 @@ namespace BlazorApp.Data
 			}
 			return employees;
 		}
-
+/*
 		public void PrintSensitiveDataDetails()
 		{
 			//List<object> redactedPatients = new();
@@ -467,6 +467,73 @@ namespace BlazorApp.Data
     {
         Console.WriteLine("No patients with extracted emails.");
     }
+}*/
+
+public List < Tools.Message > MappingTool() {
+  var mappedMessages = hl7Messages.Select(msg =>
+    JsonSerializer.Deserialize < Tools.Message > (JsonSerializer.Serialize(msg))
+  ).ToList();
+
+  return mappedMessages;
+}
+
+public string GetRandomName() {
+  return "Coy";
+}
+
+public void DeIdentifier() {
+  List < Tools.Message > Map = MappingTool();
+
+  foreach(var map in Map) {
+    Console.WriteLine("Original Date of Birth: " + map.PatientIdentification.DateTimeOfBirth.Value);
+
+    // Adjust the DateTimeOfBirth by modifying the year
+    map.PatientIdentification.DateTimeOfBirth = AdjustYearBasedOnAge(map.PatientIdentification.DateTimeOfBirth.Value);
+
+    Console.WriteLine("Adjusted Date of Birth: " + map.PatientIdentification.DateTimeOfBirth.Value);
+    Console.WriteLine();
+  }
+}
+
+public DateTime AdjustYearBasedOnAge(DateTime ? originalDateTime) {
+  // Check if the originalDateTime is null
+  if (originalDateTime == null) {
+    throw new ArgumentNullException(nameof(originalDateTime), "DateTime cannot be null");
+  }
+
+  // Get the current date
+  DateTime currentDate = DateTime.Now;
+
+  // Calculate the person's age
+  int age = currentDate.Year - originalDateTime.Value.Year;
+
+  // Adjust the year if the person is older than 89
+  if (age > 89) {
+    int adjustedYear = currentDate.Year - 90; // Set year to 90 years ago
+    return new DateTime(adjustedYear, originalDateTime.Value.Month, originalDateTime.Value.Day,
+      originalDateTime.Value.Hour, originalDateTime.Value.Minute, originalDateTime.Value.Second);
+  }
+
+  // Return original DateTime if under 90
+  return originalDateTime.Value;
+}
+
+public DateTime GenerateRandomDateTime(DateTime ? originalDateTime) {
+  Random random = new Random();
+
+  int year = originalDateTime.Value.Year;
+  int month = random.Next(1, 13); // Random month between 1 and 12
+  int day = random.Next(1, DateTime.DaysInMonth(year, month) + 1); // Random day based on the month
+
+  // Generate random values for hour, minute, and second
+  int hour = random.Next(0, 24); // Random hour between 0 and 23
+  int minute = random.Next(0, 60); // Random minute between 0 and 59
+  int second = random.Next(0, 60); // Random second between 0 and 59
+
+  // Create a new DateTime using the fixed year and random month, day, and time
+  DateTime randomDateTime = new DateTime(year, month, day, hour, minute, second);
+
+  return randomDateTime;
 }
 
 	}
