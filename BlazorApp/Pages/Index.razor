@@ -10,9 +10,9 @@
 
 <form>
     <input type="text" placeholder="Enter search term"
-           @bind="searchTerm"
-           @bind:event="oninput"
-           @bind:after="Search" />
+    @bind="searchTerm"
+    @bind:event="oninput"
+    @bind:after="Search" />
     <label for="searchType"> Search by:</label>
     <select id="searchType" @bind="selectedSearchType">
         <option value="Message Control ID">Message Control ID</option>
@@ -30,7 +30,7 @@
         else
         {
             <!-- Compute filtered messages based on search criteria.
-                 When searchTerm is empty, show all records. -->
+            When searchTerm is empty, show all records. -->
             var filteredMessages = EmployeeService.hl7Messages
             .Where(m => string.IsNullOrWhiteSpace(searchTerm) || FilterMessage(m))
             .OrderBy(m => m.MessageHeader.DateTimeOfMessage)
@@ -87,6 +87,7 @@
     {
         if (first)
         {
+            EmployeeService.InitializeRedactifyProcessor();
             _ = EmployeeService.LoadHL7RecordsAsync();
             EmployeeService.OnHL7MessagesLoaded += StateHasChanged; // Update UI when messages load
         }

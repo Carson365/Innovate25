@@ -22,7 +22,43 @@
         var value = property.GetValue(msg);
         if (value != null)
         {
-            if (value is string || value.GetType().IsPrimitive || value is DateTime)
+            // Check if value is IEnumerable (but not a string)
+            if (value is IEnumerable enumerable && !(value is string))
+            {
+                <div>
+                    <h4 title="@(GetHoverText(typeName, propertyIndex))">
+                        @property.Name
+                    </h4>
+                    @foreach (var item in enumerable)
+                    {
+                        if (item != null)
+                        {
+                            <div class="sub-item">
+                                @{
+                                    var subProperties = item.GetType().GetProperties();
+                                }
+                                @for (int j = 0; j < subProperties.Length; j++)
+                                {
+                                    var subProp = subProperties[j];
+                                    if (subProp.GetIndexParameters().Length > 0)
+                                    {
+                                        continue;
+                                    }
+                                    var subIndex = j + 1;
+                                    var subValue = subProp.GetValue(item);
+                                    if (subValue != null)
+                                    {
+                                        <p title="@(GetHoverText(item.GetType().Name, subIndex))">
+                                            <strong>@subProp.Name:</strong> @(RenderValueWithLinks(subProp.Name, subValue.ToString()))
+                                        </p>
+                                    }
+                                }
+                            </div>
+                        }
+                    }
+                </div>
+            }
+            else if (value is string || value.GetType().IsPrimitive || value is DateTime)
             {
                 <p title="@(GetHoverText(typeName, propertyIndex))">
                     <strong>@property.Name:</strong> @value.ToString()
@@ -40,7 +76,6 @@
                     @for (int j = 0; j < subProperties.Length; j++)
                     {
                         var subProp = subProperties[j];
-                        // Skip indexer properties for sub-properties.
                         if (subProp.GetIndexParameters().Length > 0)
                         {
                             continue;
@@ -82,9 +117,6 @@
             string replacement = @"Id Number: <a class=""nav-item"" href=""/search/$1"">$1</a>";
             text = Regex.Replace(text, pattern, replacement);
         }
-
-        // If the property name indicates that the value is an identifier,
-        // replace the entire value with a clickable link.
         if (propName == "PatientAccountNumber")
         {
             string pattern = @"(\S+)";
