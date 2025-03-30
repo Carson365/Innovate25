@@ -16,7 +16,7 @@ namespace BlazorApp.Data
 			public string? ReceivingFacility { get; set; }
 			public required DateTime DateTimeOfMessage { get; set; }
 			public string? Security { get; set; }
-			public required List<string> MessageType { get; set; }
+			public required MSG MessageType { get; set; }
 			public required string MessageControlId { get; set; }
 			public required string ProcessingId { get; set; }
 			public required string VersionId { get; set; }
@@ -28,7 +28,7 @@ namespace BlazorApp.Data
 			public string? CharacterSet { get; set; }
 			public string? PrincipalLanguageOfMessage { get; set; }
 			public string? AlternateCharacterSetHandlingScheme { get; set; }
-			public List<string>? MessageProfileIdentifiers { get; set; }
+			public EI? MessageProfileIdentifiers { get; set; }
 		}
 
 
@@ -39,7 +39,7 @@ namespace BlazorApp.Data
 			public required DateTime RecordedDateTime { get; set; }
 			public DateTime? DateTimePlannedEvent { get; set; }
 			public string? EventReasonCode { get; set; }
-			public List<string>? OperatorIds { get; set; }
+			public XCN? OperatorIds { get; set; }
 			public DateTime? EventOccurred { get; set; }
 			public string? EventFacility { get; set; }
 		}
@@ -50,43 +50,43 @@ namespace BlazorApp.Data
 		{
 			public int? SetIdPID { get; set; }
 			public string? PatientID { get; set; }
-			public required List<string> PatientIdentifierList { get; set; }
-			public List<string>? AlternatePatientIDs { get; set; }
+			public required CX PatientIdentifierList { get; set; }
+			public CX AlternatePatientIDs { get; set; }
 			public required PatientName PatientName { get; set; }
-			public List<string>? MothersMaidenNames { get; set; }
+			public XPN MothersMaidenNames { get; set; }
 			public DateTime? DateTimeOfBirth { get; set; }
 			public string? AdministrativeSex { get; set; }
-			public List<string>? PatientAliases { get; set; }
-			public List<string>? Races { get; set; }
-			public List<string>? PatientAddresses { get; set; }
+			public XPN PatientAliases { get; set; }
+			public CE? Races { get; set; }
+			public XAD? PatientAddresses { get; set; }
 			public string? CountyCode { get; set; }
-			public List<string>? HomePhoneNumbers { get; set; }
-			public List<string>? BusinessPhoneNumbers { get; set; }
+			public XTN? HomePhoneNumbers { get; set; }
+			public XTN? BusinessPhoneNumbers { get; set; }
 			public string? PrimaryLanguage { get; set; }
 			public string? MaritalStatus { get; set; }
 			public string? Religion { get; set; }
 			public string? PatientAccountNumber { get; set; }
 			public string? SSNNumber { get; set; }
 			public string? DriversLicenseNumber { get; set; }
-			public List<string>? MothersIdentifiers { get; set; }
-			public List<string>? EthnicGroups { get; set; }
+			public CX? MothersIdentifiers { get; set; }
+			public CE? EthnicGroups { get; set; }
 			public string? BirthPlace { get; set; }
 			public string? MultipleBirthIndicator { get; set; }
 			public int? BirthOrder { get; set; }
-			public List<string>? Citizenships { get; set; }
+			public CE? Citizenships { get; set; }
 			public string? VeteransMilitaryStatus { get; set; }
 			public string? Nationality { get; set; }
 			public DateTime? PatientDeathDateTime { get; set; }
 			public string? PatientDeathIndicator { get; set; }
 			public string? IdentityUnknownIndicator { get; set; }
-			public List<string>? IdentityReliabilityCodes { get; set; }
+			public string? IdentityReliabilityCodes { get; set; }
 			public DateTime? LastUpdateDateTime { get; set; }
 			public string? LastUpdateFacility { get; set; }
 			public string? SpeciesCode { get; set; }
 			public string? BreedCode { get; set; }
 			public string? Strain { get; set; }
 			public string? ProductionClassCode { get; set; }
-			public List<string>? TribalCitizenships { get; set; }
+			public CWE? TribalCitizenships { get; set; }
 		}
 
 
