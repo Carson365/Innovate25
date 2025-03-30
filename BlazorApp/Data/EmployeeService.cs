@@ -4,6 +4,11 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Collections;
 using static BlazorApp.Data.Classes;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
+using Humanizer;
+using Microsoft.VisualBasic;
 
 namespace BlazorApp.Data
 {
@@ -49,10 +54,8 @@ namespace BlazorApp.Data
 			string hl7Content = await File.ReadAllTextAsync(filePath);
 			ParseHL7Messages(hl7Content);
 			recordsLoading = false;
-
-			//PrintSensitiveDataDetails();
-
 			OnHL7MessagesLoaded?.Invoke();
+			PrintSensitiveDataDetails();
 
 			Console.WriteLine($"Loaded {hl7Messages.Count} HL7 messages in {(DateTime.Now - time1).TotalMilliseconds} ms.");
 		}
@@ -440,31 +443,31 @@ namespace BlazorApp.Data
 				//}
 			}
 
-			//// Console log to output the redacted patient data
-			//if (redactedPatients.Any())
-			//{
-			//	Console.WriteLine("Redacted Patient Data:");
-			//	foreach (var patient in redactedPatients)
-			//	{
-			//		Console.WriteLine($"Name(s): {((dynamic)patient).Names}");
-			//		Console.WriteLine($"Birthday: {((dynamic)patient).DateOfBirth}");
-			//		Console.WriteLine($"Age: {((dynamic)patient).Age}");
-			//		Console.WriteLine($"Address: {((dynamic)patient).Addresses}");
-			//		Console.WriteLine($"Home Phone(s): {((dynamic)patient).HomePhones}");
-			//		Console.WriteLine($"Business Phone(s): {((dynamic)patient).BusinessPhones}");
-			//		Console.WriteLine($"SSN: {((dynamic)patient).SSN}");
-			//		Console.WriteLine($"Email: {((dynamic)patient).Email}");
-			//		Console.WriteLine($"MRN(s): {((dynamic)patient).MRNs}");
-			//		Console.WriteLine($"Account Number: {((dynamic)patient).PatientAccountNumber}");
-			//		Console.WriteLine($"{((dynamic)patient).ToString()}");
-			//		Console.WriteLine("----------------------------");
-			//	}
-			//}
-			//else
-			//{
-			//	Console.WriteLine("No patients with extracted emails.");
-			//}
-		}
+    // Console log to output the redacted patient data
+    if (redactedPatients.Any()) 
+    {
+        Console.WriteLine("Redacted Patient Data:");
+        foreach (var patient in redactedPatients) 
+        {
+            Console.WriteLine($"Name(s): {((dynamic)patient).Names}");
+            Console.WriteLine($"Birthday: {((dynamic)patient).DateOfBirth}");
+            Console.WriteLine($"Age: {((dynamic)patient).Age}");
+            Console.WriteLine($"Address: {((dynamic)patient).Addresses}");
+            Console.WriteLine($"Home Phone(s): {((dynamic)patient).HomePhones}");
+            Console.WriteLine($"Business Phone(s): {((dynamic)patient).BusinessPhones}");
+            Console.WriteLine($"SSN: {((dynamic)patient).SSN}");
+            Console.WriteLine($"Email: {((dynamic)patient).Email}");
+            Console.WriteLine($"MRN(s): {((dynamic)patient).MRNs}");
+            Console.WriteLine($"Account Number: {((dynamic)patient).PatientAccountNumber}");
+			Console.WriteLine($"{((dynamic)patient).ToString()}");
+            Console.WriteLine("----------------------------");
+        }
+    } 
+    else 
+    {
+        Console.WriteLine("No patients with extracted emails.");
+    }
+}
 
 	}
 }
