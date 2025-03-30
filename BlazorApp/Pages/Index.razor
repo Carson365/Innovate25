@@ -1,169 +1,108 @@
 ﻿@page "/"
 @using BlazorApp.Data
 @inject EmployeeService EmployeeService
-@inject IJSRuntime JS
 @using Humanizer
-@using NHapi.Base.Parser
 
 <PageTitle>Home</PageTitle>
 
 <div class="topFade"></div>
 
+<!-- Search forms and employee list can remain as before -->
 <form>
-	<input style="margin-top: 1em;" type="text" placeholder="Search an ID" @bind="EmployeeService.searchId" @bind:event="oninput" @bind:after="SearchEmployee" />
+    <input style="margin-top: 1em;" type="text" placeholder="Search an ID"
+    @bind="EmployeeService.searchId"
+    @bind:event="oninput"
+    @bind:after="SearchEmployee" />
 </form>
 <form>
-	<input type="text" placeholder="Search a Name" @bind="EmployeeService.searchName" @bind:event="oninput" @bind:after="SearchEmployee" />
+    <input type="text" placeholder="Search a Name"
+    @bind="EmployeeService.searchName"
+    @bind:event="oninput"
+    @bind:after="SearchEmployee" />
 </form>
 
 <body>
-	<div class="container">
-
-		@if (EmployeeService.hl7Messages != null)
-{
-    {
-        var segmentTypeMapping = new Dictionary<string, Type>
+    <div class="container">
+        <!-- Display parsed HL7 messages -->
+        @if (!EmployeeService.recordsLoading)
         {
-            { "MSH", typeof(Tools.MSH) },
-            { "EVN", typeof(Tools.EVN) },
-            { "PID", typeof(Tools.PID) },
-            { "PV1", typeof(Tools.PV1) },
-            { "OBR", typeof(Tools.OBR) },
-            { "ORC", typeof(Tools.ORC) }
-        };
-    }
-
-    @foreach (var iMessage in EmployeeService.hl7Messages.Take(5))
-    {
-        <div class="box">
-            @{
-                var parser = new PipeParser();
-                // Encode the HL7 message as a string.
-                var messageString = parser.Encode(iMessage);
-                // Split the message into its segments (typically separated by carriage returns)
-                var segments = messageString.Split('\r');
-            }
-
-            @* Loop through each segment and display its fields with values *@
-            @foreach (var segment in segments)
+            <h3>HL7 Messages</h3>
+            @foreach (Tools.Message msg in EmployeeService.hl7Messages.Take(10))
             {
-                if (!string.IsNullOrWhiteSpace(segment))
-                {
-                    <div class="segment" style="margin-bottom: 1em;">
-                        @{
-                            // Split the segment into fields (using the pipe '|' as the separator)
-                            var fields = segment.Split('|');
-                            // Use the first field (segment name, e.g., "MSH", "PID") 
-                            // to get the corresponding type (if available)
-                            var segType = fields[0];
-                            Type? type = null;
-                            segmentTypeMapping.TryGetValue(segType, out type);
-                            
-                            // Retrieve the properties for this segment type if available
-                            var properties = type != null ? type.GetProperties() : Array.Empty<System.Reflection.PropertyInfo>();
-                        }
-                        <p>
-                            <strong>@fields[0]</strong>
-                        </p>
-                        @for (int i = 1; i < fields.Length; i++)
+                <div class="box hl7-message">
+                    @* Loop through each segment property in msg *@
+                    @foreach (var segmentProperty in msg.GetType().GetProperties())
+                    {
+                        var segmentData = segmentProperty.GetValue(msg);
+                        if (segmentData != null)
                         {
-                            // Only display the field if it has a value.
-                            if (!string.IsNullOrWhiteSpace(fields[i]))
+                            <h4>@segmentProperty.Name</h4>
+                            @foreach (var field in segmentData.GetType().GetProperties())
                             {
-                                <div style="margin-left: 1em;">
-                                    <span>
-                                        <strong>
-                                            @(i - 1 < properties.Length 
-                                                ? properties[i - 1].Name.Humanize(LetterCasing.Title) 
-                                                : $"Field {i}")
-                                        </strong>:
-                                    </span>
-                                    <span> @fields[i] </span>
-                                </div>
+                                var fieldValue = field.GetValue(segmentData);
+                                if (fieldValue != null && !string.IsNullOrWhiteSpace(fieldValue.ToString()))
+                                {
+                                    <p>
+                                        <strong>@field.Name.Humanize(LetterCasing.Title): </strong>
+                                        @{
+                                            // Check if the field is an enumerable collection (but not a string)
+                                            if (fieldValue is System.Collections.IEnumerable enumerable && !(fieldValue is string))
+                                            {
+                                                var list = enumerable.Cast<object>();
+                                                @string.Join(", ", list)
+                                            }
+                                            else
+                                            {
+                                                @fieldValue.ToString()
+                                            }
+                                        }
+                                    </p>
+                                }
                             }
                         }
-                    </div>
-                }
-            }
-        </div>
-    }
-}
+                    }
+                </div>
 
-		@if (EmployeeService.isLoading)
-		{
-			<p>Loading employees, please wait...</p>
-		}
-		else if (EmployeeService.searchResults != null && visibleCount != 0)
-		{
-			foreach (Employee item in EmployeeService.searchResults.Take(visibleCount))
-			{
-				<div class="box">
-					<EmployeeCard Employee="@item"></EmployeeCard>
-				</div>
-			}
-			if (EmployeeService.searchResults.Count == 0)
-			{
-				<p>No results</p>
-			}
-			if (EmployeeService.searchResults.Count > 100 && EmployeeService.searchResults.Count > visibleCount)
-			{
-				<div class="box" style="width:calc(90% + 30px); height:10%;">
-					<center>
-						Showing @Math.Min(EmployeeService.searchResults.Count, visibleCount) of @EmployeeService.searchResults.Count matching employees.<br />
-						<a class="underline" @onclick="() => visibleCount += 100">Click here to see more</a>
-					</center>
-				</div>
-			}
-		}
-	</div>
+            }
+        }
+        else if (EmployeeService.isLoading)
+        {
+            <p>Loading employees, please wait...</p>
+        }
+
+        <!-- Display employee search results -->
+        @if (EmployeeService.searchResults != null && EmployeeService.searchResults.Any())
+        {
+            @foreach (Employee item in EmployeeService.searchResults)
+            {
+                <div class="box">
+                    <EmployeeCard Employee="@item"></EmployeeCard>
+                </div>
+            }
+        }
+    </div>
 </body>
 
 <div class="bottomFade"></div>
 
 @code {
-	private int visibleCount;
+    private int visibleCount;
 
-	protected override async Task OnInitializedAsync()
-	{
-		_ = LoadEmployeesInBackground();
-	}
-
-	private async Task LoadEmployeesInBackground()
-	{
-		await EmployeeService.LoadEmployeesAsync();
-		await EmployeeService.LoadHL7RecordsAsync();
-		refreshSearch();
-	}
-
-	private void refreshSearch()
-	{
-		if (!string.IsNullOrEmpty(EmployeeService.searchId) || !string.IsNullOrEmpty(EmployeeService.searchName))
-			SearchEmployee();
-		StateHasChanged();
-	}
-
-	protected override async Task OnAfterRenderAsync(bool first)
-	{
-		SearchEmployee();
-		StateHasChanged();
-	}
-
-	private void SearchEmployee()
-	{
-		visibleCount = 100; // Reset visibleCount whenever a new search is made.
-		EmployeeService.SearchEmployees();
-
-		if (string.IsNullOrEmpty(EmployeeService.searchId) && string.IsNullOrEmpty(EmployeeService.searchName))
-			visibleCount = 0;
-	}
-
-    Dictionary<string, Type> segmentTypeMapping = new()
+    protected override async Task OnInitializedAsync()
     {
-        { "MSH", typeof(Tools.MSH) },
-        { "EVN", typeof(Tools.EVN) },
-        { "PID", typeof(Tools.PID) },
-        { "PV1", typeof(Tools.PV1) },
-        { "OBR", typeof(Tools.OBR) },
-        { "ORC", typeof(Tools.ORC) }
-    };
+        // Load employees and HL7 records in the background.
+        _ = EmployeeService.LoadEmployeesAsync();
+        _ = EmployeeService.LoadHL7RecordsAsync();
+        EmployeeService.OnHL7MessagesLoaded += StateHasChanged; // Update UI when messages load
+
+    }
+
+    private void SearchEmployee()
+    {
+        visibleCount = 100; // Reset visibleCount on new search
+        EmployeeService.SearchEmployees();
+
+        if (string.IsNullOrEmpty(EmployeeService.searchId) && string.IsNullOrEmpty(EmployeeService.searchName))
+            visibleCount = 0;
+    }
 }

@@ -7,8 +7,6 @@
 html, body {
     font-family: 'Atkinson';
     --background: #EAECEC;
-/*  --primary: #B6E2B6;
-    --secondary: #94AFDB;*/
     --primary: #A6D2A6;
     --secondary: #849FCB;
     --accent: #a970ff;

@@ -5,7 +5,7 @@
 		// MSH Segment – Message Header
 		public class MSH
 		{
-			public required char FieldSeparator { get; set; }
+			//public required string FieldSeparator { get; set; }
 			public required string EncodingCharacters { get; set; }
 			public string? SendingApplication { get; set; }
 			public string? SendingFacility { get; set; }
@@ -214,7 +214,7 @@
 
 		public class Message
 		{
-			public required MSH MessageHeader { get; set; }
+			public MSH? MessageHeader { get; set; }
 			public EVN? EventType { get; set; }
 			public PID? PatientIdentification { get; set; }
 			public PV1? PatientVisit { get; set; }
