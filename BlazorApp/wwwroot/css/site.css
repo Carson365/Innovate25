@@ -162,3 +162,8 @@ table tr {
 ::-webkit-scrollbar{
     width: 0px;
 }
+
+/*p {
+    white-space: pre-wrap;
+}
+*/

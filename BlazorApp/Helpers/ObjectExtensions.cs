@@ -19,8 +19,8 @@ namespace BlazorApp.Helpers
 				var items = enumerable.Cast<object>()
 									  .Select(item => item.ToHumanizedString(level + 1));
 				// At level 1, use line breaks; otherwise commas.
-				//var separator = level == 0 ? Environment.NewLine : ", ";
-				var separator = Environment.NewLine;
+				var separator = level == 0 ? Environment.NewLine : ", ";
+				//var separator = Environment.NewLine;
 				return string.Join(separator, items);
 			}
 
@@ -49,8 +49,8 @@ namespace BlazorApp.Helpers
 				.Where(x => !string.IsNullOrWhiteSpace(x));
 
 			// Use line breaks at recursion level 1, commas otherwise.
-			//var separatorForProperties = level == 0 ? Environment.NewLine : ", ";
-			var separatorForProperties = Environment.NewLine;
+			var separatorForProperties = level == 0 ? Environment.NewLine : ", ";
+			//var separatorForProperties = Environment.NewLine;
 			return string.Join(separatorForProperties, humanizedProperties);
 		}
 	}

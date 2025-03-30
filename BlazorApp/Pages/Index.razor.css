@@ -103,3 +103,8 @@ label{
 	color: var(--text);
 	font-size: 1em;
 }
+
+p {
+	white-space: pre-wrap;
+	line-height: 1em;
+}

@@ -11,3 +11,7 @@
     font-size: 1em;
     line-height: 0.5em;
 }
+p {
+    white-space: pre-wrap;
+    line-height: 1em;
+}
